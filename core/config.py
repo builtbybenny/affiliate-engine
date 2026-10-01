@@ -63,7 +63,9 @@ WEEKLY_CALENDAR = {
 }
 
 # Local posting time per format (24h). B2B audience skews earlier.
-POST_TIMES = {"carousel": "11:00", "reel": "19:00"}
+# Local-time (TZ_OFFSET) slots, mirroring the GitHub cron schedule
+# (12:30 UTC carousel, 23:30 UTC reel) for US-Eastern prime time.
+POST_TIMES = {"carousel": "18:00", "reel": "05:00"}
 
 # Slide palettes: (bg_top, bg_bottom, accent, text) — tech/dark UI feel
 PALETTES = [

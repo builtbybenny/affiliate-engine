@@ -1,8 +1,8 @@
 name: scheduler
 on:
   schedule:
-    - cron: "30 5 * * *" # 11:00 IST carousel slot
-    - cron: "0 13 * * *" # 18:30 IST reel slot
+    - cron: "30 12 * * *" # 08:30 US-Eastern carousel slot (US morning prime)
+    - cron: "30 23 * * *" # 19:30 US-Eastern reel slot (US evening prime)
   workflow_dispatch: {}
 
 permissions:
@@ -44,7 +44,7 @@ jobs:
         id: slot
         run: |
           H=$(date -u +%H)
-          if [ "$H" = "05" ]; then F=carousel; else F=reel; fi
+          if [ "$H" = "12" ]; then F=carousel; else F=reel; fi
           echo "format=$F" >> "$GITHUB_OUTPUT"
 
       - run: pip install -r requirements.txt

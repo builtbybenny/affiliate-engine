@@ -322,8 +322,9 @@ Stage 6 done when: the manual workflow run posts to your IG + FB.
 # STAGE 7 — First-week routine (5 minutes/day, then hands-off)
 
 Day 1 after go-live:
-  - Confirm the scheduled runs: Repo -> Actions -> list shows runs at ~11:00
-    and ~18:30 your time.
+  - Confirm the scheduled runs: Repo -> Actions -> list shows runs at ~18:00
+    (IST) and ~05:00 (IST, next morning) — those are 08:30 and 19:30 US-Eastern,
+    the prime windows for the US audience this engine targets.
   - Post 1 Story manually on IG: screenshot your first post + "New tools
     weekly" text. Stories cannot be automated without extra app review; this
     is the one daily human touch that boosts reach.
