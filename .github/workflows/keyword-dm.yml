@@ -1,7 +1,9 @@
 name: keyword-dm
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    # hourly at :43 (was */30 — Meta hardening 2026-10-02: 48 CI runs/day was
+    # noise while the kill switch is off; when enabled, replies land within ~1h)
+    - cron: "43 * * * *"
   workflow_dispatch: {}
 
 permissions:

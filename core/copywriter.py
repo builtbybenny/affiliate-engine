@@ -55,6 +55,12 @@ CTA_LINES = [
     "🔗 I stack all my links in the bio — grab the free trial",
     "📌 Save this · 🔗 bio link has the free-trial link",
     "🔗 Bio link → start free, thank me later",
+    "🔗 Everything I use sits behind one bio link — start free",
+    "Save this for your next tool audit 📌 — trial link is in the bio 🔗",
+    "🔗 Tap the bio link to try it free — I only list tools I actually use",
+    "This one earned a permanent slot in my stack 📌 trial link in bio 🔗",
+    "📌 Bookmark this. Free trial is one bio-tap away 🔗",
+    "🔗 Bio link → try the free tier yourself, no card needed",
 ]
 
 DISCLOSURE = "Affiliate link — we may earn a small commission at no extra cost to you. #ad"
@@ -140,30 +146,43 @@ def build_caption(
     currency = (product.get("currency") or "").strip()
     trial = (product.get("trial") or "").strip()
 
-    lines: list[str] = []
-    lines.append(hook or pick_hook(theme, product, rng))
-    lines.append("")
+    # Meta hardening (2026-10-02): rotate structure, bullet marks and
+    # section order so consecutive posts don't share an identical skeleton.
+    # Every variant carries the same information — only the shape changes.
+    variant = rng.randrange(3)
+    mark = ("✅", "🔹", "👉")[variant]
+    headers = [
+        "Why it earns its slot in my stack:",
+        "Why I keep it in the rotation:",
+        "",  # variant 2: headerless, punchier
+    ]
+    benefit_block: list[str] = []
     if benefits:
-        lines.append("Why it earns its slot in my stack:")
-        for b in benefits:
-            lines.append(f"✅ {b}")
-        lines.append("")
+        header = headers[variant]
+        benefit_block = ([header] if header else []) + [f"{mark} {b}" for b in benefits]
+    info: list[str] = []
     if specs := (product.get("specs") or "").strip():
-        lines.append(f"⚙️ {specs}")
-        lines.append("")
+        info.append(f"⚙️ {specs}")
     if trial:
-        lines.append(f"🎁 Free trial: {trial}")
-        lines.append("")
+        info.append(f"🎁 Free trial: {trial}")
     if price:
-        lines.append(f"💰 {currency} {price}".replace("  ", " "))
-        lines.append("")
-    lines.append(rng.choice(CTA_LINES))
-    lines.append("")
-    lines.append(DISCLOSURE)
+        info.append(f"💰 {currency} {price}".replace("  ", " "))
+
+    blocks: list[str] = [hook or pick_hook(theme, product, rng)]
+    if variant == 0:
+        order = [benefit_block, info]
+    elif variant == 1:
+        order = [info[::-1], benefit_block]
+    else:
+        order = [[info[0]] if info else [], benefit_block, info[1:]]
+    for part in order:
+        if part:
+            blocks.append("\n".join(part))
+    blocks.append(rng.choice(CTA_LINES))
+    blocks.append(DISCLOSURE)
     if include_hashtags:
-        lines.append("")
-        lines.append(hashtag_block(product, rng))
-    caption = "\n".join(lines)
+        blocks.append(hashtag_block(product, rng))
+    caption = "\n\n".join(blocks)
     return caption[:2200]  # IG hard limit
 
 
@@ -177,8 +196,10 @@ def build_first_comment(product: dict, rng: random.Random) -> str:
 # Official creator guidance: 3-5 well-chosen, genuinely descriptive tags.
 IG_HASHTAG_LIMIT = 5
 
-# Niche anchors we prefer whenever they exist in the pool — consistent brand
-# positioning beats scattershot tagging now that we only get 5 slots.
+# Niche anchors that may appear as the ONE fixed tag per post. Rotation
+# rule (Meta hardening 2026-10-02): at most one preferred anchor per post,
+# rest sampled fresh — the old "fill all 5 from this list" rule gave every
+# post a near-identical hashtag block, a classic automation signature.
 _PREFERRED_TAGS = [
     "saas", "saastools", "aitools", "productivity",
     "techstack", "solopreneur", "nocode", "buildinpublic",
@@ -187,16 +208,13 @@ _PREFERRED_TAGS = [
 
 def hashtag_block(product: dict, rng: random.Random) -> str:
     tags = load_hashtags()
-    pool = [t if t.startswith("#") else f"#{t}" for t in tags]
+    pool = list(dict.fromkeys(t if t.startswith("#") else f"#{t}" for t in tags))
     name_words = [w for w in planner.slugify(product["name"]).split("-") if len(w) > 3]
     out = ["#" + w for w in name_words[:2]]
-    for pref in _PREFERRED_TAGS:
-        if len(out) >= IG_HASHTAG_LIMIT:
-            break
-        tag = "#" + pref
-        if tag in pool and tag not in out:
-            out.append(tag)
-    if len(out) < IG_HASHTAG_LIMIT:
-        rest = [t for t in pool if t not in out]
+    preferred = [f"#{t}" for t in _PREFERRED_TAGS if f"#{t}" in pool and f"#{t}" not in out]
+    if preferred and len(out) < IG_HASHTAG_LIMIT:
+        out.append(rng.choice(preferred))
+    rest = [t for t in pool if t not in out]
+    if rest and len(out) < IG_HASHTAG_LIMIT:
         out += rng.sample(rest, min(IG_HASHTAG_LIMIT - len(out), len(rest)))
     return " ".join(out[:IG_HASHTAG_LIMIT])

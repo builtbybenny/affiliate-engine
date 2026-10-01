@@ -1,8 +1,15 @@
 name: scheduler
 on:
   schedule:
-    - cron: "30 12 * * *" # 08:30 US-Eastern carousel slot (US morning prime)
-    - cron: "30 23 * * *" # 19:30 US-Eastern reel slot (US evening prime)
+    # RAMP MODE (decided 2026-10-02): 1 post/day while the account is <2 weeks
+    # old — re-check ~2026-10-15, then re-add the 12:30 UTC carousel slot for 2/day.
+    # Evening US-prime window only, at deliberately odd minutes: posting at
+    # 23:30 sharp every day is a bot tell. Four triggers + a guard + a random
+    # draw = exactly one post per day, at a different time each day.
+    - cron: "9 23 * * *"   # ~19:09 ET
+    - cron: "27 23 * * *"  # ~19:27 ET
+    - cron: "46 23 * * *"  # ~19:46 ET
+    - cron: "57 23 * * *"  # ~19:57 ET — forced fallback if earlier draws passed
   workflow_dispatch: {}
 
 permissions:
@@ -40,19 +47,58 @@ jobs:
           REPO=${GITHUB_REPOSITORY#*/}
           echo "PUBLIC_MEDIA_BASE_URL=https://${OWNER}.github.io/${REPO}" >> "$GITHUB_ENV"
 
-      - name: Decide today's slot
+      - name: Decide today's slot (ramp guard + randomized draw)
         id: slot
         run: |
-          H=$(date -u +%H)
-          if [ "$H" = "12" ]; then F=carousel; else F=reel; fi
-          echo "format=$F" >> "$GITHUB_OUTPUT"
+          python - <<'PY'
+          import csv, datetime, os, random
+          utc = datetime.datetime.utcnow()
+          manual = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+          fmt = "carousel" if utc.hour == 12 else "reel"
+          # publish.py logs dates under config.now_local() = IST (UTC+05:30)
+          today = (utc + datetime.timedelta(hours=5, minutes=30)).date().isoformat()
+          posted = set()
+          try:
+              with open("data/published_log.csv", newline="", encoding="utf-8") as f:
+                  posted = {r[0] for r in list(csv.reader(f))[1:] if r}
+          except FileNotFoundError:
+              pass
+          if manual:
+              run, why = True, "manual dispatch"
+          elif today in posted:
+              run, why = False, f"ramp guard: already posted {today}"
+          elif (utc.hour, utc.minute) >= (23, 55):
+              run, why = True, "last trigger of the window — forced"
+          else:
+              t = (utc.hour, utc.minute)
+              p = 0.35 if t < (23, 20) else 0.55 if t < (23, 40) else 0.7
+              run = random.random() < p
+              why = f"draw p={p} -> {'post' if run else 'pass'}"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"format={fmt}\nrun={str(run).lower()}\n")
+          print(f"{fmt} @ {utc:%H:%M}Z: {why}")
+          PY
 
-      - run: pip install -r requirements.txt
+      - name: Randomize exact time inside the slot
+        if: steps.slot.outputs.run == 'true'
+        run: sleep $((RANDOM % 170))
+
+      # Reels are rendered with ffmpeg; runner images do NOT ship it
+      # (first-ever run failed 2026-10-01 on exactly this).
+      - name: Install ffmpeg (reels)
+        if: steps.slot.outputs.run == 'true'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
+      - name: Install deps
+        if: steps.slot.outputs.run == 'true'
+        run: pip install -r requirements.txt
 
       - name: Generate media
+        if: steps.slot.outputs.run == 'true'
         run: python scripts/generate.py --today --format ${{ steps.slot.outputs.format }}
 
       - name: Copy media into docs/ for GitHub Pages
+        if: steps.slot.outputs.run == 'true'
         run: |
           mkdir -p docs/media
           cp -r public/media/* docs/media/
@@ -60,6 +106,7 @@ jobs:
           if [ -f public/index.html ]; then cp public/index.html docs/index.html; fi
 
       - name: Commit media to Pages
+        if: steps.slot.outputs.run == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -68,6 +115,7 @@ jobs:
           git push
 
       - name: Wait until Pages serves the new files
+        if: steps.slot.outputs.run == 'true'
         run: |
           sleep 60
           python - <<'PY'
@@ -95,4 +143,13 @@ jobs:
           PY
 
       - name: Publish to Instagram + Facebook
+        if: steps.slot.outputs.run == 'true'
         run: python scripts/publish.py --today --format ${{ steps.slot.outputs.format }}
+
+      - name: Commit publish log (so later triggers see today's post)
+        if: steps.slot.outputs.run == 'true'
+        run: |
+          git add data/published_log.csv
+          git commit -m "log: published $(date -u +%FT%HZ)" || echo "no log change"
+          git pull --rebase origin main || true
+          git push
