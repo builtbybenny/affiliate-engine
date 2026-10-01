@@ -173,11 +173,30 @@ def build_first_comment(product: dict, rng: random.Random) -> str:
     return hashtag_block(product, rng)[:2200]
 
 
+# Instagram hard-caps posts/reels at 5 hashtags (2026 policy change; was 30).
+# Official creator guidance: 3-5 well-chosen, genuinely descriptive tags.
+IG_HASHTAG_LIMIT = 5
+
+# Niche anchors we prefer whenever they exist in the pool — consistent brand
+# positioning beats scattershot tagging now that we only get 5 slots.
+_PREFERRED_TAGS = [
+    "saas", "saastools", "aitools", "productivity",
+    "techstack", "solopreneur", "nocode", "buildinpublic",
+]
+
+
 def hashtag_block(product: dict, rng: random.Random) -> str:
     tags = load_hashtags()
-    name_words = [w for w in planner.slugify(product["name"]).split("-") if len(w) > 3]
-    product_tags = ["#" + w for w in name_words[:3]]
     pool = [t if t.startswith("#") else f"#{t}" for t in tags]
-    k = max(0, 28 - len(product_tags))
-    chosen = rng.sample(pool, min(k, len(pool)))
-    return " ".join(product_tags + chosen)
+    name_words = [w for w in planner.slugify(product["name"]).split("-") if len(w) > 3]
+    out = ["#" + w for w in name_words[:2]]
+    for pref in _PREFERRED_TAGS:
+        if len(out) >= IG_HASHTAG_LIMIT:
+            break
+        tag = "#" + pref
+        if tag in pool and tag not in out:
+            out.append(tag)
+    if len(out) < IG_HASHTAG_LIMIT:
+        rest = [t for t in pool if t not in out]
+        out += rng.sample(rest, min(IG_HASHTAG_LIMIT - len(out), len(rest)))
+    return " ".join(out[:IG_HASHTAG_LIMIT])
