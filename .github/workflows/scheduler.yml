@@ -77,7 +77,10 @@ jobs:
           files = [f for f in Path("docs/media").rglob("*") if f.is_file()]
           if not files:
               raise SystemExit("no media files found")
-          newest = max(files, key=lambda f: f.stat().st_mtime)
+          # CI checkouts give every file the same mtime, so "newest" must be
+          # by path: render folders are date-named, the latest path IS the
+          # newest render. Polling it waits for the new Pages deploy.
+          newest = max(files, key=lambda f: f.as_posix())
           url = f"{base}/{newest.relative_to('docs').as_posix()}"
           for _ in range(20):
               try:
