@@ -1,0 +1,25 @@
+[
+  {
+    "date": "2026-09-28",
+    "format": "carousel",
+    "product_id": "framer",
+    "concept": "stack_drop",
+    "is_rerun": false
+  },
+  {
+    "date": "2026-09-29",
+    "format": "reel",
+    "product_id": "systeme",
+    "concept": "before_after",
+    "is_rerun": false,
+    "out_file": "C:\\Users\\Benny David\\Desktop\\Freebuff edit folder\\Tech Saas\\public\\media\\reels\\2026-09-29_reel_systeme.mp4"
+  },
+  {
+    "date": "2026-09-30",
+    "format": "carousel",
+    "product_id": "beehiiv",
+    "concept": "honest_versus",
+    "is_rerun": false,
+    "out_dir": "C:\\Users\\Benny David\\Desktop\\Freebuff edit folder\\Tech Saas\\public\\media\\carousels\\2026-09-30_carousel_beehiiv"
+  }
+]

@@ -1,0 +1,37 @@
+{
+  "free_ai_apps": {
+    "keyword": "AI",
+    "title": "12 free AI apps that feel illegal to know",
+    "subtitle": "Every one has a real free tier. No cards.",
+    "items": [
+      {"name": "NotebookLM", "desc": "Turn any PDF/notes into a podcast + study pack", "url": "https://notebooklm.google.com"},
+      {"name": "Perplexity", "desc": "Google with cited answers, no ads", "url": "https://perplexity.ai"},
+      {"name": "Gamma", "desc": "Full slide decks from one prompt", "url": "https://gamma.app"},
+      {"name": "Suno", "desc": "Radio-quality songs from text, free daily credits", "url": "https://suno.com"},
+      {"name": "Krea", "desc": "Realtime AI image + upscale playground", "url": "https://krea.ai"},
+      {"name": "Ideogram", "desc": "The AI that finally spells text right in images", "url": "https://ideogram.ai"},
+      {"name": "HuggingChat", "desc": "Open-source chat models, zero cost", "url": "https://huggingface.co/chat"},
+      {"name": "Pika", "desc": "Text-to-video clips on a free tier", "url": "https://pika.art"},
+      {"name": "ElevenLabs", "desc": "Voice cloning + TTS free monthly allowance", "url": "https://elevenlabs.io"},
+      {"name": "Bolt.new", "desc": "Prompt-to-working-webapp in browser", "url": "https://bolt.new"},
+      {"name": "Copy.ai", "desc": "Marketing copy templates, free plan", "url": "https://copy.ai"},
+      {"name": "Luma Dream Machine", "desc": "Cinematic AI video clips free", "url": "https://lumalabs.ai/dream-machine"}
+    ]
+  },
+  "github_repos": {
+    "keyword": "REPOS",
+    "title": "9 GitHub repos that feel illegal to know",
+    "subtitle": "All public. All free. Star them before they're gone.",
+    "items": [
+      {"name": "free-for.dev", "desc": "Every free developer tier on the internet, one list", "url": "https://github.com/free-for-dev/free-for-dev"},
+      {"name": "public-apis", "desc": "1200+ free APIs for any app idea", "url": "https://github.com/public-apis/public-apis"},
+      {"name": "build-your-own-x", "desc": "Build your own database, bot, engine - masterclass links", "url": "https://github.com/codecrafters-io/build-your-own-x"},
+      {"name": "developer-roadmap", "desc": "Step-by-step roadmaps for every tech career", "url": "https://github.com/kamranahmedse/developer-roadmap"},
+      {"name": "system-design-primer", "desc": "The system design interview bible", "url": "https://github.com/donnemartin/system-design-primer"},
+      {"name": "coding-interview-university", "desc": "A full CS degree compressed to one study plan", "url": "https://github.com/jwasham/coding-interview-university"},
+      {"name": "free-programming-books", "desc": "Thousands of legal free tech books/courses", "url": "https://github.com/EbookFoundation/free-programming-books"},
+      {"name": "project-based-learning", "desc": "Tutorials that end with a finished project", "url": "https://github.com/practical-tutorials/project-based-learning"},
+      {"name": "OSSU", "desc": "A complete free CS curriculum, semester by semester", "url": "https://github.com/ossu/computer-science"}
+    ]
+  }
+}

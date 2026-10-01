@@ -1,0 +1,6 @@
+# Zero-cost stack: everything here is free/open-source
+Pillow>=10.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+cryptography>=42.0.0
+fpdf2>=2.8.0

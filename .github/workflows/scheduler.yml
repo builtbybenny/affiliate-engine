@@ -1,0 +1,93 @@
+name: scheduler
+on:
+  schedule:
+    - cron: "30 5 * * *" # 11:00 IST carousel slot
+    - cron: "0 13 * * *" # 18:30 IST reel slot
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: affiliate-scheduler
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      IG_USER_ID: ${{ secrets.IG_USER_ID }}
+      FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      GRAPH_VERSION: v23.0
+      BRAND_NAME: Stack & Save
+      BRAND_HANDLE: "@stackandsavehq"
+      # Optional boosters: empty secret = graceful fallback (templates/gradients)
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compute Pages URL (free hosting)
+        run: |
+          OWNER=${GITHUB_REPOSITORY%%/*}
+          REPO=${GITHUB_REPOSITORY#*/}
+          echo "PUBLIC_MEDIA_BASE_URL=https://${OWNER}.github.io/${REPO}" >> "$GITHUB_ENV"
+
+      - name: Decide today's slot
+        id: slot
+        run: |
+          H=$(date -u +%H)
+          if [ "$H" = "05" ]; then F=carousel; else F=reel; fi
+          echo "format=$F" >> "$GITHUB_OUTPUT"
+
+      - run: pip install -r requirements.txt
+
+      - name: Generate media
+        run: python scripts/generate.py --today --format ${{ steps.slot.outputs.format }}
+
+      - name: Copy media into docs/ for GitHub Pages
+        run: |
+          mkdir -p docs/media
+          cp -r public/media/* docs/media/
+          # keep the link-in-bio page in sync with products.csv
+          if [ -f public/index.html ]; then cp public/index.html docs/index.html; fi
+
+      - name: Commit media to Pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/media
+          git commit -m "media: ${{ steps.slot.outputs.format }} $(date -u +%F)" || echo "nothing to commit"
+          git push
+
+      - name: Wait until Pages serves the new files
+        run: |
+          sleep 60
+          python - <<'PY'
+          import os, time, requests
+          from pathlib import Path
+          base = os.environ["PUBLIC_MEDIA_BASE_URL"]
+          files = [f for f in Path("docs/media").rglob("*") if f.is_file()]
+          if not files:
+              raise SystemExit("no media files found")
+          newest = max(files, key=lambda f: f.stat().st_mtime)
+          url = f"{base}/{newest.relative_to('docs').as_posix()}"
+          for _ in range(20):
+              try:
+                  if requests.head(url, timeout=10).status_code == 200:
+                      print("served:", url)
+                      break
+              except Exception:
+                  pass
+              time.sleep(30)
+          else:
+              raise SystemExit(f"Pages not serving {url} yet")
+          PY
+
+      - name: Publish to Instagram + Facebook
+        run: python scripts/publish.py --today --format ${{ steps.slot.outputs.format }}

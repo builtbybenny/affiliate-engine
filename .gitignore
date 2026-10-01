@@ -1,0 +1,21 @@
+# secrets & local state
+.env
+data/token.enc
+
+# generated media (CI copies to docs/ for Pages)
+public/media/
+docs/media/
+public/preview.html
+
+# local verification probes (diagnostics, never meant for the repo)
+data/_*.*
+_tmp_verify_car/
+
+# app workspace state
+.freebuff/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/

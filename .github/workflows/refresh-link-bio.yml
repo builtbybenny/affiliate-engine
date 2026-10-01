@@ -1,0 +1,34 @@
+name: refresh-link-bio
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - "data/products.csv"
+      - "data/hashtags.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Rebuild link-in-bio page
+        run: python scripts/build_link_page.py
+      - name: Move page into docs/
+        run: |
+          mkdir -p docs
+          mv public/index.html docs/index.html
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html
+          git commit -m "link-bio: refresh" || echo "no changes"
+          git push
