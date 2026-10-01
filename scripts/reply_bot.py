@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import sys
 import time
 from datetime import datetime, timedelta
@@ -36,7 +37,9 @@ import requests  # noqa: E402
 from core import config, planner  # noqa: E402
 from media.lead import load_lists  # noqa: E402
 
-API = f"https://graph.instagram.com/{config.GRAPH_VERSION}"
+# This token flavor (Facebook Login) only works on graph.facebook.com —
+# graph.instagram.com rejects it with error 190. Same lesson as the publisher.
+API = f"https://graph.facebook.com/{config.GRAPH_VERSION}"
 SENT_LOG = config.DATA_DIR / "dm_log.csv"
 
 
@@ -182,6 +185,13 @@ def main() -> None:
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
+
+    # Kill switch: the bot must stay dark until we deliberately launch it
+    # (new-account hygiene — no automation touching comments in week 1).
+    if os.getenv("REPLY_BOT_ENABLED", "").strip().lower() not in ("1", "true", "yes"):
+        print("Reply bot is switched OFF (set REPLY_BOT_ENABLED=true to activate).")
+        print("Nothing was scanned or sent.")
+        return
 
     if not config.ACCESS_TOKEN or not config.IG_USER_ID:
         print("Credentials missing - run scripts/setup_tokens.py first.")
