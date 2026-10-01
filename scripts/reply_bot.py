@@ -28,19 +28,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from core.boot import setup_console  # noqa: E402
 
-setup_console()
-
-import requests  # noqa: E402
-
-from core import config, planner  # noqa: E402
-from media.lead import load_lists  # noqa: E402
+# NOTE: heavy imports (requests, Pillow via media.lead, dotenv via core.config)
+# are deferred into main() until AFTER the kill-switch check — a disabled bot
+# must be instant and must never fail a CI run on a missing dependency.
 
 # This token flavor (Facebook Login) only works on graph.facebook.com —
 # graph.instagram.com rejects it with error 190. Same lesson as the publisher.
-API = f"https://graph.facebook.com/{config.GRAPH_VERSION}"
-SENT_LOG = config.DATA_DIR / "dm_log.csv"
+# API and SENT_LOG are bound in main() once the heavy imports succeed.
 
 
 def _get(path: str, params: dict) -> dict:
@@ -181,16 +176,33 @@ def process_comments(list_id: str, dry_run: bool = False) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--list", choices=sorted(load_lists().keys()), default="")
+    ap.add_argument("--list", default="")
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
-    # Kill switch: the bot must stay dark until we deliberately launch it
-    # (new-account hygiene — no automation touching comments in week 1).
+    # Kill switch FIRST — before any heavy imports — so a disabled bot is
+    # instant and can never fail a CI run on a missing dependency.
     if os.getenv("REPLY_BOT_ENABLED", "").strip().lower() not in ("1", "true", "yes"):
         print("Reply bot is switched OFF (set REPLY_BOT_ENABLED=true to activate).")
         print("Nothing was scanned or sent.")
+        return
+
+    # Heavy imports only happen when the bot is actually enabled.
+    global requests, config, planner, load_lists, API, SENT_LOG
+    from core.boot import setup_console
+    setup_console()
+
+    import requests  # noqa: E402
+
+    from core import config, planner  # noqa: E402
+    from media.lead import load_lists  # noqa: E402
+    API = f"https://graph.facebook.com/{config.GRAPH_VERSION}"
+    SENT_LOG = config.DATA_DIR / "dm_log.csv"
+
+    available = sorted(load_lists().keys())
+    if args.list and args.list not in available:
+        print(f"unknown list '{args.list}' (available: {', '.join(available)})")
         return
 
     if not config.ACCESS_TOKEN or not config.IG_USER_ID:
