@@ -5,7 +5,8 @@ What it does:
   1. Takes a short-lived User Access Token you generate free at
      https://developers.facebook.com/tools/explorer (select your app +
      pages_show_list, pages_read_engagement, instagram_basic,
-     instagram_content_publish, business_management).
+     instagram_content_publish, pages_manage_posts,
+     instagram_manage_comments, business_management).
   2. Exchanges it for a LONG-LIVED user token (needs App ID + App secret
      from developers.facebook.com -> your app -> Settings -> Basic).
   3. Uses the long-lived token on /me/accounts, which yields a
@@ -95,7 +96,8 @@ def main() -> None:
             "\n1) Go to https://developers.facebook.com/tools/explorer\n"
             "   - Select your App\n"
             "   - Add permissions: pages_show_list, pages_read_engagement,\n"
-            "     instagram_basic, instagram_content_publish, business_management\n"
+            "     instagram_basic, instagram_content_publish, pages_manage_posts,\n"
+            "     instagram_manage_comments, business_management\n"
             "   - Generate Access Token and paste it here:\n> "
         ).strip()
     )

@@ -201,7 +201,8 @@ ever says the app must be live, only then continue to 4.9.
 4.9. (Only if required) App Review: click "Start verification", provide the
 screencast it asks for showing your posting dashboard; the permissions used
 by this engine (instagram_content_publish, instagram_basic,
-pages_read_engagement, pages_show_list, business_management) are standard for
+pages_read_engagement, pages_show_list, pages_manage_posts,
+instagram_manage_comments, business_management) are standard for
 "manage my own business" cases.
 
 Stage 4 done when: the app exists, Development mode shows on the dashboard.
@@ -225,7 +226,7 @@ Stage 4 done when: the app exists, Development mode shows on the dashboard.
 |---|---|
 | "Meta App" dropdown (top right) | Pick "Stack & Save Engine" |
 | "User or Page" dropdown | Leave as "User" for now |
-| Permissions dropdown (right side) | Click and add ALL of: pages_show_list, pages_read_engagement, instagram_basic, instagram_content_publish, business_management |
+| Permissions dropdown (right side) | Click and add ALL of: pages_show_list, pages_read_engagement, instagram_basic, instagram_content_publish, pages_manage_posts, instagram_manage_comments, business_management |
 | "Generate Access Token" button | Click it, approve the permission popups (Continue -> OK) |
 
 5.5. The big text box now contains a long string starting with "EAAG" or

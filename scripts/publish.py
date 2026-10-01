@@ -11,9 +11,12 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 import sys
 from datetime import date as _date
 from pathlib import Path
+
+import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from core.boot import setup_console; setup_console()
@@ -58,6 +61,28 @@ def latest_render(fmt: str) -> Path | None:
             if c.is_file() and c.suffix == ".mp4":
                 return c
     return None
+
+
+def token_has_scope(scope: str) -> bool:
+    """True if the page token carries this permission (debug_token, app token).
+    Unknown (no app creds / network hiccup) -> False, so we take the safe
+    fallback of folding hashtags into the caption."""
+    app_id = os.getenv("META_APP_ID", "")
+    app_secret = os.getenv("META_APP_SECRET", "")
+    if not (app_id and app_secret and config.ACCESS_TOKEN):
+        return False
+    try:
+        r = requests.get(
+            f"https://graph.facebook.com/{config.GRAPH_VERSION}/debug_token",
+            params={
+                "input_token": config.ACCESS_TOKEN,
+                "access_token": f"{app_id}|{app_secret}",
+            },
+            timeout=15,
+        )
+        return scope in r.json().get("data", {}).get("scopes", [])
+    except Exception:
+        return False
 
 
 def publish(fmt: str, for_date: _date, dry_run: bool, targets: set[str]) -> None:
@@ -111,6 +136,17 @@ def publish(fmt: str, for_date: _date, dry_run: bool, targets: set[str]) -> None
         comment_file.read_text(encoding="utf-8") if comment_file.exists() else ""
     )
 
+    # Hashtag strategy. IG captions are immutable after publishing, so decide
+    # NOW: if the token lacks instagram_manage_comments, fold the hashtag
+    # block into the caption instead of losing it. FB has no first-comment
+    # flow in this engine, so hashtags always ride in the FB caption.
+    hashtags = first_comment.strip()
+    ig_can_comment = token_has_scope("instagram_manage_comments") if hashtags else True
+    if hashtags and not ig_can_comment:
+        print("  (no comment permission on token: hashtags folded into caption)")
+    caption_ig = caption + (f"\n\n{hashtags}" if hashtags and not ig_can_comment else "")
+    caption_fb = caption + (f"\n\n{hashtags}" if hashtags else "")
+
     if dry_run:
         print("(dry run — nothing posted)")
         return
@@ -118,19 +154,19 @@ def publish(fmt: str, for_date: _date, dry_run: bool, targets: set[str]) -> None
     ig_id = fb_id = ""
     if "ig" in targets:
         if fmt == "carousel":
-            ig_id = instagram.publish_carousel(urls, caption)
+            ig_id = instagram.publish_carousel(urls, caption_ig)
         elif fmt == "reel":
-            ig_id = instagram.publish_reel(urls[0], caption)
+            ig_id = instagram.publish_reel(urls[0], caption_ig)
         print("  IG published:", ig_id)
-        if first_comment:
+        if first_comment and ig_can_comment:
             cid = instagram.post_first_comment(ig_id, first_comment)
             if cid:
                 print("  IG first comment posted")
     if "fb" in targets:
         if fmt == "reel":
-            fb_id = facebook.publish_video(urls[0], caption)
+            fb_id = facebook.publish_video(urls[0], caption_fb)
         else:
-            fb_id = facebook.publish_photo(urls[0], caption)
+            fb_id = facebook.publish_photo(urls[0], caption_fb)
         print("  FB published:", fb_id)
 
     log_published(for_date, fmt, pid, ig_id, fb_id, urls)

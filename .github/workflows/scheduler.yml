@@ -19,6 +19,8 @@ jobs:
       IG_USER_ID: ${{ secrets.IG_USER_ID }}
       FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
       ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      META_APP_ID: ${{ secrets.META_APP_ID }}
+      META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
       GRAPH_VERSION: v23.0
       BRAND_NAME: Stack & Save
       BRAND_HANDLE: "@stackandsavehq"

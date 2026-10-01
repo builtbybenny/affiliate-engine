@@ -64,7 +64,8 @@ python scripts/setup_tokens.py
 ```
 Paste a short-lived token from developers.facebook.com/tools/explorer
 (permissions: `pages_show_list, pages_read_engagement, instagram_basic,
-instagram_content_publish, business_management`). The wizard writes a
+instagram_content_publish, pages_manage_posts, instagram_manage_comments,
+business_management`). The wizard writes a
 **never-expiring Page token** into `.env` and resolves your IDs.
 
 ### 3. Add your affiliate products
