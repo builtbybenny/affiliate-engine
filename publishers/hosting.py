@@ -76,7 +76,9 @@ def resolve_public_base() -> str:
                 if r.status_code == 200:
                     html = r.json().get("html_url", "").rstrip("/")
                     if html:
-                        return f"{html}/docs"
+                        # Pages serves docs/ content at the site root (e.g.
+                        # https://owner.github.io/repo/), so no "/docs" suffix.
+                        return html
             except Exception:
                 pass
     except Exception:
