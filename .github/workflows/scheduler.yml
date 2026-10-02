@@ -146,10 +146,11 @@ jobs:
         if: steps.slot.outputs.run == 'true'
         run: python scripts/publish.py --today --format ${{ steps.slot.outputs.format }}
 
-      - name: Commit publish log (so later triggers see today's post)
+      - name: Commit publish log + rotation memory (so later triggers see today's post,
+        # and LRU product rotation learns from CI posts, not just local ones)
         if: steps.slot.outputs.run == 'true'
         run: |
-          git add data/published_log.csv
-          git commit -m "log: published $(date -u +%FT%HZ)" || echo "no log change"
+          git add data/published_log.csv data/concept_history.json
+          git commit -m "log: published $(date -u +%FT%HZ) + rotation state" || echo "no changes"
           git pull --rebase origin main || true
           git push

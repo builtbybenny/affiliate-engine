@@ -1,10 +1,11 @@
 {
-  "pairings": [
-    "honest_versus::systeme",
-    "honest_versus::beehiiv"
-  ],
-  "product_last": {
-    "systeme": "2026-09-30",
-    "beehiiv": "2026-09-30"
-  }
+ "pairings": [
+  "honest_versus::systeme",
+  "honest_versus::beehiiv"
+ ],
+ "product_last": {
+  "systeme": "2026-09-30",
+  "beehiiv": "2026-09-30",
+  "notion": "2026-10-02"
+ }
 }
