@@ -1,11 +1,13 @@
 {
- "pairings": [
-  "honest_versus::systeme",
-  "honest_versus::beehiiv"
- ],
- "product_last": {
-  "systeme": "2026-09-30",
-  "beehiiv": "2026-09-30",
-  "notion": "2026-10-02"
- }
+  "pairings": [
+    "honest_versus::systeme",
+    "honest_versus::beehiiv",
+    "hidden_feature::canva"
+  ],
+  "product_last": {
+    "systeme": "2026-09-30",
+    "beehiiv": "2026-09-30",
+    "notion": "2026-10-02",
+    "canva": "2026-10-03"
+  }
 }
