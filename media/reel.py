@@ -65,7 +65,13 @@ def _draw_caption(frame: Image.Image, text: str, t: float, duration: float, pale
     fade_t = min(1.0, max(0.0, t / max(0.001, duration * 0.7)))
     shown = max(1, int(len(words) * fade_t + 0.999))
 
-    f = common.font(72, bold=True)
+    # Fit-to-width: long benefit lines crop at the frame edges otherwise.
+    # (The per-word fade can't use common.draw_fitted, so shrink instead.)
+    size = 72
+    f = common.font(size, bold=True)
+    while size > 20 and sum(f.getlength(w) for w in words) + f.getlength(" ") * (len(words) - 1) > W - 140:
+        size -= 4
+        f = common.font(size, bold=True)
     space_w = f.getlength(" ")
     line_w = sum(f.getlength(w) for w in words) + space_w * (len(words) - 1)
     x = (W - line_w) / 2
