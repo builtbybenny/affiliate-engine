@@ -12,7 +12,6 @@ automation
 marketingtools
 freelancetools
 notiontips
-canvatips
 aisaas
 foundertips
 toolstack

@@ -44,19 +44,20 @@ try:
         cid, rerun = concepts.pick_concept(p, fmt, d, rng)
         seq.append({"day": d.isoformat(), "product": p["id"], "concept": cid, "rerun": rerun})
 
-    first8, later = seq[:8], seq[8:]
+    n_prod = len(products)
+    firstN, later = seq[:n_prod], seq[n_prod:]
     out["checks"].append({
-        "name": "lru_all_8_products_first8_no_reruns",
-        "ok": len({s["product"] for s in first8}) == 8 and not any(s["rerun"] for s in first8),
-        "order": [s["product"] for s in first8],
+        "name": f"lru_all_{n_prod}_products_first{n_prod}_no_reruns",
+        "ok": len({s["product"] for s in firstN}) == n_prod and not any(s["rerun"] for s in firstN),
+        "order": [s["product"] for s in firstN],
     })
     out["checks"].append({
         "name": "repeats_get_honest_rerun_framing",
         "ok": all(s["rerun"] for s in later),
         "later": later,
     })
-    pairs = [(s["concept"], s["product"]) for s in first8]
-    out["checks"].append({"name": "no_pairing_repeats_first8", "ok": len(set(pairs)) == 8})
+    pairs = [(s["concept"], s["product"]) for s in firstN]
+    out["checks"].append({"name": "no_pairing_repeats_firstN", "ok": len(set(pairs)) == n_prod})
 
     # dry-run purity: record=False must not ADD pairings
     rng = random.Random(1)
@@ -95,11 +96,11 @@ try:
         out["checks"].append({"name": "pexels_stock_fetch_and_cache", "ok": True, "skipped": "no PEXELS_API_KEY"})
 
     from media import carousel as car
-    prod = planner.find_by_slug("canva", products)
+    prod = planner.find_by_slug("notion", products)
     files, texts = car.build_carousel(
         prod, "stack_drop",
         out_dir=Path("_tmp_verify_car"), for_date=d0, seed=5,
-        hook_override="You keep asking about Canva - here it is again",
+        hook_override="You keep asking about Notion - here it is again",
     )
     out["checks"].append({
         "name": "carousel_renders_with_rerun_hook",

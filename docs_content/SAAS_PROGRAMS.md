@@ -18,7 +18,6 @@ before applying — programs change. Start with 3–5, don't join everything.
 | Tool | Commission | Angle |
 |---|---|---|
 | **Systeme.io** | Recurring (~60% lifetime per public plan page) | "Launch a funnel free" |
-| **Canva** | Up to $36/Pro annual | Every reel needs thumbnails |
 | **Framer** | Recurring | "Portfolio in a weekend" |
 | **ConvertKit / Kit** | Recurring | Creator email angle |
 
