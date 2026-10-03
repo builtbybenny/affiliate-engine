@@ -112,6 +112,9 @@ def main() -> None:
         provs = _stock.providers()
         if provs:
             add(OK, f"stock photos: providers active = {', '.join(provs)} (variety rotation on)")
+            # Unsplash: OK when present, silent when absent (key arriving)
+            if _os.getenv("UNSPLASH_ACCESS_KEY", "").strip():
+                add(OK, "stock: Unsplash key present (4th source active)")
             if not (_os.getenv("VECTEEZY_API_KEY", "").strip() and _os.getenv("VECTEEZY_ACCOUNT_ID", "").strip()):
                 add(WARN, "stock: no Vecteezy API key — one less variety source",
                     "free tier (500 dl/mo) at vecteezy.com/developers, add VECTEEZY_API_KEY + VECTEEZY_ACCOUNT_ID to .env")
