@@ -108,11 +108,35 @@ def main() -> None:
         else:
             add(WARN, "AI copywriter off — using built-in templates",
                 "optional: free key at aistudio.google.com/app/apikey, add GEMINI_API_KEY to .env")
-        if _os.getenv("PEXELS_API_KEY", "").strip():
-            add(OK, "stock photos: Pexels key present (real photo backgrounds active)")
+        from media import stock as _stock
+        provs = _stock.providers()
+        if provs:
+            add(OK, f"stock photos: providers active = {', '.join(provs)} (variety rotation on)")
+            if _os.getenv("UNSPLASH_ACCESS_KEY", "").strip():
+                add(OK, "stock: Unsplash key present")
+            else:
+                add(WARN, "stock: no Unsplash key — one less variety source",
+                    "free Access Key at unsplash.com/developers, add UNSPLASH_ACCESS_KEY to .env")
+            if not (_os.getenv("VECTEEZY_API_KEY", "").strip() and _os.getenv("VECTEEZY_ACCOUNT_ID", "").strip()):
+                add(WARN, "stock: no Vecteezy API key — one less variety source",
+                    "free tier (500 dl/mo) at vecteezy.com/developers, add VECTEEZY_API_KEY + VECTEEZY_ACCOUNT_ID to .env")
         else:
             add(WARN, "stock photos off — slides use branded gradients",
                 "optional: free key at pexels.com/api, add PEXELS_API_KEY to .env")
+        if _os.getenv("PEXELS_API_KEY", "").strip():
+            add(OK, "stock video: Pexels key present (reels can use real footage backgrounds)")
+    except Exception:
+        pass
+
+    try:
+        from core import hooklib as _hooklib
+        _lib = _hooklib.load()
+        if _lib["hooks"]:
+            add(OK, f"hook library: {len(_lib['hooks'])} researched templates"
+                + (f" (updated {_lib['updated'][:10]})" if _lib.get("updated") else ""))
+        else:
+            add(WARN, "hook library empty — posts fall back to built-in hooks",
+                "run: python scripts/hook_research.py (also runs weekly in CI)")
     except Exception:
         pass
 

@@ -150,7 +150,7 @@ jobs:
         # and LRU product rotation learns from CI posts, not just local ones)
         if: steps.slot.outputs.run == 'true'
         run: |
-          git add data/published_log.csv data/concept_history.json
+          git add data/published_log.csv data/concept_history.json data/hook_library.json
           git commit -m "log: published $(date -u +%FT%HZ) + rotation state" || echo "no changes"
           git pull --rebase origin main || true
           git push

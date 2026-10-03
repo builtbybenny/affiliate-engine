@@ -182,8 +182,8 @@ def build_carousel(
 
     bg = _product_image(product)
     if bg is None:
-        from media import stock  # optional: real photos when PEXELS_API_KEY set
-        bg = stock.product_background(product, portrait=True)
+        from media import stock  # optional: multi-provider stock when keys set
+        bg = stock.product_background(product, portrait=True, salt=for_date.isoformat())
     slides: list[Image.Image] = [_hook_slide(product, hook, palette, bg)]
     for i, body in enumerate(bodies, start=1):
         slides.append(_content_slide(body, i, total, palette, kicker=product["name"]))

@@ -137,11 +137,26 @@ SYSTEM_BRIEF = (
 
 
 def write_copy(product: dict, theme: str, fallback_hooks: list[str],
-               fallback_slides: list[str], fallback_caption: str) -> dict | None:
-    """Returns {'hook': str, 'slides': [..], 'caption': str} or None on any failure."""
+               fallback_slides: list[str], fallback_caption: str,
+               hook_ideas: list[str] | None = None) -> dict | None:
+    """Returns {'hook': str, 'slides': [..], 'caption': str} or None on any failure.
+
+    hook_ideas: internet-researched hook strings for THIS product
+    (core/hooklib.pick). When present, the model must open with one of
+    their structures instead of reaching for the same generic angles.
+    """
     if not available():
         return None
     trial = (product.get("trial") or "").strip()
+    ideas_block = ""
+    if hook_ideas:
+        ideas = "\n".join(f"- {i}" for i in hook_ideas[:5])
+        ideas_block = (
+            "\nRESEARCHED HOOKS (proven click-structures for this product — "
+            "the hook MUST use one of these structures, rewritten to fit "
+            "this tool's specifics; do not invent a different angle):\n"
+            f"{ideas}\n"
+        )
     prompt = (
         f"{SYSTEM_BRIEF}\n\n"
         f"Tool: {product['name']}\n"
@@ -150,11 +165,17 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         f"Free trial: {trial}\n"
         f"Price: {product.get('currency', '')} {product.get('price', '')}\n"
         f"Competitor to position against: {product.get('alt', 'the old way')}\n"
-        f"Post theme: {theme}\n\n"
+        f"Post theme: {theme}\n"
+        f"{ideas_block}\n"
         "SCROLLER-FIRST STRUCTURE:\n"
-        '- "hook": the human moment (pain/cost/chaos the scroller recognizes) '
-        "in plain words; do NOT put the tool or competitor name in the hook.\n"
-        "- Slides: first 1-2 slides deepen the human moment or the old painful "
+        + (
+            '- "hook": open with the researched hook structure you chose, '
+            "compressed to max 9 words, curiosity/number/pain-led.\n"
+            if hook_ideas else
+            '- "hook": the human moment (pain/cost/chaos the scroller recognizes) '
+            "in plain words; do NOT put the tool or competitor name in the hook.\n"
+        )
+        + "- Slides: first 1-2 slides deepen the human moment or the old painful "
         "way WITHOUT assuming the scroller knows the category; middle slides "
         "reveal the tool as the fix with one concrete benefit each; last "
         "slide = free-trial CTA.\n"

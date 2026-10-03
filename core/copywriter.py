@@ -70,7 +70,7 @@ DEFAULT_HASHTAGS = [
     "saas", "saastools", "aitools", "techstack", "productivitytools",
     "solopreneur", "smallbusinesstools", "startuplife", "buildinpublic",
     "nocode", "automation", "marketingtools", "freelancetools",
-    "notiontips", "aisaas", "foundertips", "toolstack",
+    "aisaas", "foundertips", "toolstack",
     "workflowautomation", "digitaltools", "reels", "explorepage", "instabusiness",
 ]
 

@@ -17,10 +17,14 @@ jobs:
           python-version: "3.12"
       - name: Trend radar scan
         run: python scripts/radar.py
-      - name: Commit radar candidates + digest
+      - name: Hook research (harvest + distill)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/hook_research.py
+      - name: Commit radar + hook library
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/radar_candidates.json data/radar_digest_*.md
-          git commit -m "radar: weekly scan $(date -u +%F)" || echo "nothing new"
+          git add data/radar_candidates.json data/radar_digest_*.md data/hook_library.json data/hook_research_log.json
+          git commit -m "evolve: weekly scan + hook research $(date -u +%F)" || echo "nothing new"
           git push

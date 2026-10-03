@@ -146,9 +146,10 @@ def build_reel(
         if p.exists():
             src = Image.open(p).convert("RGB")
             break
+    salt = for_date.isoformat()
     if src is None:
-        from media import stock  # optional: real photos when PEXELS_API_KEY set
-        src = stock.product_background(product, portrait=True)
+        from media import stock  # optional: multi-provider stock when keys set
+        src = stock.product_background(product, portrait=True, salt=salt)
     if src is None:
         src = common.vertical_gradient((W, H), palette[0], palette[1])
 
@@ -173,10 +174,28 @@ def build_reel(
     with tempfile.TemporaryDirectory() as tmp:
         frames_dir = Path(tmp) / "frames"
         frames_dir.mkdir()
+
+        # Stock footage background (multi-provider, cached, Pexels video key):
+        # real motion beats a Ken Burns still — falls back on ANY failure.
+        video_frames: list[Path] | None = None
+        try:
+            from media import stock
+            vdir = Path(tmp) / "vid"
+            vdir.mkdir()
+            video_frames = stock.video_bg_frames(
+                product, salt, total_frames, W, H, FPS, vdir,
+            )
+        except Exception:
+            video_frames = None
+
         n_captions = len(benefits)
         for i in range(total_frames):
             t = i / FPS
-            frame = _base_frame(bg, t / duration)
+            if video_frames:
+                vf = Image.open(video_frames[i % len(video_frames)])
+                frame = common.cover_crop(vf, W, H).convert("RGBA")
+            else:
+                frame = _base_frame(bg, t / duration)
             frame = _scrim(frame)
             # rotate through benefit lines, each shown for an equal slice
             idx = min(n_captions - 1, int(t / (duration / n_captions)))

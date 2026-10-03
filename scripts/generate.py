@@ -19,8 +19,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from core.boot import setup_console; setup_console()
 
-from core import config, copywriter, planner, concepts, llm
+from core import config, copywriter, planner, concepts, llm, hooklib
 from media import carousel, reel
+
+
+def _stock_credits() -> str:
+    """Attribution owed by stock providers used during this render (first comment)."""
+    try:
+        from media import stock
+        credits = stock.drain_credits()
+        return ("\n" + "\n".join(credits)) if credits else ""
+    except Exception:
+        return ""
 
 
 def plan_slot(for_date: _date, fmt: str, products: list[dict], record: bool = True) -> dict:
@@ -62,10 +72,20 @@ def main() -> None:
         product = planner.find_by_slug(plan["product_id"], products) or products[0]
         concept = concepts.CONCEPTS[plan["concept"]]
         rng = random.Random(for_date.toordinal() + (0 if fmt == "carousel" else 1))
-        hook = copywriter.hook_from_concept(concept, product, rng)
+
+        # Internet-researched hooks (scripts/hook_research.py): product-
+        # and concept-matched. Empty when the library hasn't been built —
+        # then everything behaves exactly as before (concept banks).
+        hook_ideas = hooklib.pick(
+            product, plan["concept"], for_date, rng,
+            count=5, record=not args.dry_run,
+        )
+        # Template hook: researched hook first, concept bank as fallback.
+        hook = (hook_ideas[0] if hook_ideas else "") or copywriter.hook_from_concept(concept, product, rng)
 
         print(f"\n[{for_date}] {fmt.upper()} | concept={concept['label']} | product={product['name']}"
-              + ("  (honest rerun)" if plan["is_rerun"] else ""))
+              + ("  (honest rerun)" if plan["is_rerun"] else "")
+              + (f"  | {len(hook_ideas)} researched hooks" if hook_ideas else ""))
 
         if args.dry_run:
             print("  hook   :", hook)
@@ -80,6 +100,7 @@ def main() -> None:
             fallback_hooks=concept["hooks"],
             fallback_slides=[],
             fallback_caption="",
+            hook_ideas=hook_ideas,
         )
         if ai_copy:
             print("  copy: AI (Gemini)")
@@ -96,6 +117,7 @@ def main() -> None:
                 product, plan["concept"], for_date=for_date, copy_override=ai_copy,
                 hook_override=final_hook,
             )
+            first_comment += _stock_credits()
             caption = (
                 ai_copy["caption"]
                 if ai_copy
@@ -113,6 +135,7 @@ def main() -> None:
                 product, plan["concept"], for_date=for_date, copy_override=ai_copy,
                 hook_override=final_hook,
             )
+            first_comment += _stock_credits()
             caption = (
                 ai_copy["caption"]
                 if ai_copy

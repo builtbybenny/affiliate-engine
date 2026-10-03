@@ -8,10 +8,8 @@ before applying — programs change. Start with 3–5, don't join everything.
 | Tool | Commission | Cookie/notes | Why it converts on IG |
 |---|---|---|---|
 | **GoHighLevel** | 40% recurring | Agency audience; 14-day trial | "Replace 5 tools with 1" narrative |
-| **Opus Clip** | 25% recurring (yr 1) | $20 min payout; free tier | Creator tool; demo reels write themselves |
 | **Pictory** | 20–50% | Free trial, no card | Blog-to-video demos |
 | **beehiiv** | Recurring + growth bonuses | 30-day trial, free tier | Newsletter operators are on IG |
-| **Notion** | up to $50/activation + 20% yr-1 | Massive brand trust | Template galleries go viral |
 
 ## Tier 2 — free tiers that convert cold traffic
 
@@ -25,7 +23,10 @@ before applying — programs change. Start with 3–5, don't join everything.
 
 - Apply with your IG handle + "I publish 12 tool demos/month via automated
   pipeline; bio link hosts my full stack page."
-- Programs accepting you pre-launch: Systeme.io, Pictory, Opus Clip, Framer.
+- Programs accepting you pre-launch: Systeme.io, Pictory, Framer.
+- OUT OF PIPELINE (2026-10-03, not applied): Notion (program closed),
+  Opus Clip (form has no India option — email appeal pending), Canva (dropped).
+  Re-add only after an application exists.
 - Amazon-style one-time commissions (< 20%) — skip for SaaS; recurring compounds.
 
 ## Rules for links

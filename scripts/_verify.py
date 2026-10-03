@@ -96,11 +96,11 @@ try:
         out["checks"].append({"name": "pexels_stock_fetch_and_cache", "ok": True, "skipped": "no PEXELS_API_KEY"})
 
     from media import carousel as car
-    prod = planner.find_by_slug("notion", products)
+    prod = products[0]  # catalog-agnostic: test against whatever is first
     files, texts = car.build_carousel(
         prod, "stack_drop",
         out_dir=Path("_tmp_verify_car"), for_date=d0, seed=5,
-        hook_override="You keep asking about Notion - here it is again",
+        hook_override=f"You keep asking about {prod['name']} - here it is again",
     )
     out["checks"].append({
         "name": "carousel_renders_with_rerun_hook",

@@ -11,6 +11,9 @@ public/preview.html
 data/_*.*
 _tmp_verify_car/
 
+# stock media cache (downloaded photos/clips, regenerable)
+data/stock/
+
 # app workspace state
 .freebuff/
 AGENTS.md
