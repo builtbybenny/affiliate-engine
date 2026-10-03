@@ -34,6 +34,9 @@ jobs:
       # Optional boosters: empty secret = graceful fallback (templates/gradients)
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+      VECTEEZY_API_KEY: ${{ secrets.VECTEEZY_API_KEY }}
+      VECTEEZY_ACCOUNT_ID: ${{ secrets.VECTEEZY_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
 
