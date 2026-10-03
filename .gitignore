@@ -10,6 +10,7 @@ public/preview.html
 # local verification probes (diagnostics, never meant for the repo)
 data/_*.*
 _tmp_verify_car/
+data/_sample_carousel/
 
 # stock media cache (downloaded photos/clips, regenerable)
 data/stock/
