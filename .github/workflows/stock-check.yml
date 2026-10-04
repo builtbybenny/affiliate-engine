@@ -1,0 +1,60 @@
+name: stock-check
+# Manual-only: live-verifies the stock API secret VALUES (GitHub hides values,
+# doctor.py only checks presence). Run it after adding/rotating stock secrets.
+# Never publishes, never commits — read the step log for PASS/FAIL per provider.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+      VECTEEZY_API_KEY: ${{ secrets.VECTEEZY_API_KEY }}
+      VECTEEZY_ACCOUNT_ID: ${{ secrets.VECTEEZY_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Live probe each stock provider
+        run: |
+          python - <<'PY'
+          import os, sys, traceback
+          from media import stock
+
+          print("providers() =", stock.providers())
+          failures = []
+
+          def probe(label, expected, fn):
+              if not expected:
+                  print(f"{label}: SKIP (no secret set)")
+                  return
+              try:
+                  res = fn("workspace", True, 1)
+                  if res:
+                      print(f"{label}: PASS (got image url)")
+                  else:
+                      print(f"{label}: FAIL (no results)")
+                      failures.append(label)
+              except Exception as e:
+                  print(f"{label}: FAIL {type(e).__name__}: {str(e)[:300]}")
+                  failures.append(label)
+
+          probe("pexels",   os.getenv("PEXELS_API_KEY", "").strip(),     stock._search_pexels)
+          probe("unsplash", os.getenv("UNSPLASH_ACCESS_KEY", "").strip(), stock._search_unsplash)
+          probe("vecteezy", os.getenv("VECTEEZY_API_KEY", "").strip()
+                            and os.getenv("VECTEEZY_ACCOUNT_ID", "").strip(), stock._search_vecteezy)
+          # openverse is keyless — included as a sanity check on runner networking
+          probe("openverse", "always", stock._search_openverse)
+
+          if failures:
+              print("FAILED:", ", ".join(failures))
+              sys.exit(1)
+          print("ALL SET PROVIDERS PASS")
+          PY
