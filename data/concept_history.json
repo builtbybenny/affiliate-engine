@@ -3,13 +3,15 @@
     "honest_versus::systeme",
     "honest_versus::beehiiv",
     "hidden_feature::canva",
-    "before_after::pictory"
+    "before_after::pictory",
+    "hidden_feature::framer"
   ],
   "product_last": {
     "systeme": "2026-09-30",
     "beehiiv": "2026-09-30",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
-    "pictory": "2026-10-04"
+    "pictory": "2026-10-04",
+    "framer": "2026-10-05"
   }
 }
