@@ -6,7 +6,7 @@
       "topic": "website",
       "flavor": "painpoint",
       "why": "Identifies slow load times causing lost revenue directly.",
-      "uses": 0,
+      "uses": 1,
       "source": "research",
       "added": "2026-10-03"
     },
@@ -42,7 +42,7 @@
       "topic": "ai",
       "flavor": "transformation",
       "why": "Promises a clear journey from failure to success.",
-      "uses": 0,
+      "uses": 1,
       "source": "research",
       "added": "2026-10-03"
     },
@@ -267,7 +267,7 @@
       "topic": "sell",
       "flavor": "numbers",
       "why": "Uses a stark failure statistic to highlight a software fix.",
-      "uses": 0,
+      "uses": 1,
       "source": "research",
       "added": "2026-10-03"
     },
@@ -303,7 +303,7 @@
       "topic": "website",
       "flavor": "objection",
       "why": "Reassures beginners that no technical skills are needed.",
-      "uses": 0,
+      "uses": 1,
       "source": "research",
       "added": "2026-10-03"
     },
@@ -438,7 +438,7 @@
       "topic": "email",
       "flavor": "transformation",
       "why": "Shows the ultimate win for email marketers.",
-      "uses": 0,
+      "uses": 1,
       "source": "research",
       "added": "2026-10-03"
     },
