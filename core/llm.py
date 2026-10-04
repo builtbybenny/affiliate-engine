@@ -179,10 +179,10 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         "way WITHOUT assuming the scroller knows the category; middle slides "
         "reveal the tool as the fix with one concrete benefit each; last "
         "slide = free-trial CTA.\n"
-        '- "caption" line 1: the human moment again, no tool name. You MUST '
-        f"name the product {product['name']} clearly in one middle slide AND "
-        "once in the caption (slides 2-4) — the scroller must learn what the "
-        "fix is called. Never name the competitor in the caption.\n\n"
+        '- "caption" line 1: the human moment again, no tool name. The literal '
+        f"product name '{product['name']}' MUST appear in the caption body "
+        "(one middle line introduces it as the fix — never leave the reader "
+        "without the name). Never name the competitor in the caption.\n\n"
         "Return STRICT JSON with keys:\n"
         '  "hook": slide-1 headline, max 9 words, curiosity or number-led;\n'
         '  "slides": 3-5 strings, max 8 words each, one benefit or proof point per slide;\n'

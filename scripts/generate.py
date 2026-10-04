@@ -33,6 +33,24 @@ def _stock_credits() -> str:
         return ""
 
 
+def _ensure_product_named(caption: str, product: dict) -> str:
+    """Belt-and-braces: the caption must name the tool at least once.
+
+    The AI prompt asks for it but compliance slips (2026-10-04's Pictory
+    caption never said 'Pictory'). Deterministic guard: if the name is
+    missing, splice a naming line in before the disclosure.
+    """
+    name = product["name"]
+    if name.lower() in caption.lower():
+        return caption
+    trial = (product.get("trial") or "").strip()
+    line = f"The tool: {name}" + (f" — {trial}." if trial else ".")
+    marker = "Affiliate link"
+    if marker in caption:
+        return caption.replace(marker, f"{line}\n\n{marker}", 1)
+    return f"{caption}\n\n{line}"
+
+
 def plan_slot(for_date: _date, fmt: str, products: list[dict], record: bool = True) -> dict:
     """Decide product + concept for a slot and return the plan dict."""
     product = planner.pick_product_lru(for_date, products)
@@ -126,6 +144,7 @@ def main() -> None:
                     include_hashtags=False, hook=hook,
                 )
             )
+            caption = _ensure_product_named(caption, product)
             (files[0].parent / "caption.txt").write_text(caption, encoding="utf-8")
             (files[0].parent / "first_comment.txt").write_text(first_comment, encoding="utf-8")
             plan["out_dir"] = str(files[0].parent)
@@ -144,6 +163,7 @@ def main() -> None:
                     include_hashtags=False, hook=hook,
                 )
             )
+            caption = _ensure_product_named(caption, product)
             path.with_name(path.stem + "_caption.txt").write_text(caption, encoding="utf-8")
             path.with_name(path.stem + "_comment.txt").write_text(first_comment, encoding="utf-8")
             plan["out_file"] = str(path)
