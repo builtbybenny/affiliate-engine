@@ -20,8 +20,25 @@ setup_console()
 OUT = Path(__file__).resolve().parent.parent / "data" / "_verify.json"
 out: dict = {"checks": [], "error": ""}
 
+# Production rotation memory, captured before the simulation unlinks the
+# history file; restored verbatim in the finally-block below. (Blanking it
+# used to wipe real rotation state on every local run — see c298b47 for
+# why product_last/pairings must survive.)
+saved_history: str | None = None
+hist_state = "untouched"  # untouched | owned (we unlinked it) | fresh (never existed)
+
 try:
     from core import concepts, planner
+
+    # clean slate for the LRU simulation — production history is saved
+    # here and put back untouched when the run ends. Runs BEFORE any
+    # other check so an early failure never strands a half-owned file.
+    if concepts.HISTORY.exists():
+        saved_history = concepts.HISTORY.read_text(encoding="utf-8")
+        concepts.HISTORY.unlink()
+        hist_state = "owned"
+    else:
+        hist_state = "fresh"
 
     products = planner.load_products()
     out["checks"].append({
@@ -29,10 +46,6 @@ try:
         "ok": products[0].get("alt", "") != "" and products[0].get("trial", "") != "",
         "alts_sample": [p["alt"] for p in products][:3],
     })
-
-    # clean slate for simulation (and for production launch afterwards)
-    if concepts.HISTORY.exists():
-        concepts.HISTORY.unlink()
 
     d0 = date(2026, 10, 1)
     seq = []
@@ -144,10 +157,14 @@ except Exception:
     out["error"] = traceback.format_exc()[-1500:]
 
 finally:
-    # production starts with a pristine concept history
+    # owned file -> restore production rotation memory byte-for-byte;
+    # fresh launch -> pristine; untouched (early failure) -> leave alone
     try:
         from core import concepts as _c
-        _c.HISTORY.write_text(json.dumps({"pairings": [], "product_last": {}}), encoding="utf-8")
+        if hist_state == "owned" and saved_history is not None:
+            _c.HISTORY.write_text(saved_history, encoding="utf-8")
+        elif hist_state == "fresh":
+            _c.HISTORY.write_text(json.dumps({"pairings": [], "product_last": {}}), encoding="utf-8")
     except Exception:
         pass
 
