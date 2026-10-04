@@ -8,6 +8,30 @@
       "source": "techcrunch",
       "seen": "2026-09-28T14:43:50+00:00"
     },
+    "applesaysitstighteningmacosfulldiskaccesscontrolsduetonewrisksfromaiagents": {
+      "title": "Apple says it\u2019s tightening macOS \u2018Full Disk Access\u2019 controls due to new risks from AI agents",
+      "link": "https://techcrunch.com/2026/10/02/apple-says-its-tightening-macos-full-disk-access-controls-due-to-new-risks-from-ai-agents/",
+      "desc": "Apple says it will add new controls around macOS\u2019s Full Disk Access permission, warning that increasingly capable AI agents make broad access to users\u2019 files, messages, mail, and browsing history riskier.",
+      "score": 7,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
+    "openaislatestfeaturestakedirectaimattheappstoremodel": {
+      "title": "OpenAI\u2019s latest features take direct aim at the app store model",
+      "link": "https://techcrunch.com/2026/09/29/openais-latest-features-take-direct-aim-at-the-app-store-model/",
+      "desc": "OpenAI is building out the pieces of an alternative to the traditional app store model, turning ChatGPT into a place where software can be discovered and used by people and AI agents alike.",
+      "score": 7,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
+    "openaiexpandschatgptspluginswithapplikeinterfacesandautomations": {
+      "title": "OpenAI expands ChatGPT\u2019s plug-ins with app-like interfaces and automations",
+      "link": "https://techcrunch.com/2026/09/29/openai-expands-chatgpts-plugins-with-app-like-interfaces-and-automations/",
+      "desc": "OpenAI is expanding ChatGPT plug-ins with dedicated sidebar homes, interactive panels, file viewers, improved discovery, and support for automations.",
+      "score": 7,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
     "nextfivevcsjudgingstartupbattlefield200contendersattechcrunchdisrupt2026": {
       "title": "Next five VCs judging Startup Battlefield 200 contenders at TechCrunch Disrupt 2026",
       "link": "https://techcrunch.com/2026/09/28/next-five-vcs-judging-startup-battlefield-200-contenders-at-techcrunch-disrupt-2026/",
@@ -64,6 +88,54 @@
       "source": "techcrunch",
       "seen": "2026-09-28T14:43:50+00:00"
     },
+    "jackdorseysbitchatdisappearsfromappstoresinindiaaftergovernmentorder": {
+      "title": "Jack Dorsey\u2019s Bitchat disappears from app stores in India after government order",
+      "link": "https://techcrunch.com/2026/10/03/jack-dorseys-bitchat-disappears-from-app-stores-in-india-after-government-order/",
+      "desc": "Bitchat has become largely unavailable in India as a result of the restrictions.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
+    "doordashlaunchesanaiagentyoucantexttoorderfood": {
+      "title": "DoorDash launches an AI agent you can text to order food",
+      "link": "https://techcrunch.com/2026/09/30/doordash-launches-an-ai-agent-you-can-text-to-order-food/",
+      "desc": "By launching an AI agent for food ordering, DoorDash is looking to gain an edge over rivals Uber Eats and Grubhub.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
+    "airbnbaddsaisearchmoresocialfeatures": {
+      "title": "Airbnb adds AI search, more social features",
+      "link": "https://techcrunch.com/2026/09/30/airbnb-adds-ai-search-more-social-features/",
+      "desc": "Airbnb is also launching new services such as meal delivery and laundry in select locations.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
+    "yourcaranditsmobileappareprobablyhandingoverallkindsofdatatotechcompanies": {
+      "title": "Your car and its mobile app are probably handing over all kinds of data to tech companies",
+      "link": "https://techcrunch.com/2026/09/29/your-car-and-its-mobile-app-are-probably-handing-over-all-kinds-of-data-to-tech-companies/",
+      "desc": "Researchers at Northeastern University found vehicles and their companion apps regularly shared detailed data with some of the largest tech companies.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
+    "aipoweredappmakerwabipivotstoamessagingexperience": {
+      "title": "AI-powered app maker Wabi pivots to a messaging experience",
+      "link": "https://techcrunch.com/2026/09/29/ai-powered-app-maker-wabi-pivots-to-a-messaging-experience/",
+      "desc": "Wabi is repositioning its prompt-based app builder as a personal AI agent that can create interfaces on demand, combining chat, apps, and ongoing tasks.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
+    "firefliesaddsdictationtoitsdesktopnotetakingapps": {
+      "title": "Fireflies adds dictation to its desktop notetaking apps",
+      "link": "https://techcrunch.com/2026/09/29/fireflies-adds-dictation-to-its-desktop-notetaking-apps/",
+      "desc": "Fireflies said that it won't charge extra for the new dictation feature, which can be used with any desktop app.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
     "youtubewillletyoubuildyourownalgorithmwithai": {
       "title": "YouTube will let you build your own algorithm with AI",
       "link": "https://techcrunch.com/2026/09/23/youtube-will-let-you-build-your-own-algorithm-with-ai/",
@@ -71,7 +143,23 @@
       "score": 4,
       "source": "techcrunch",
       "seen": "2026-09-28T14:43:50+00:00"
+    },
+    "redditiskillingrssfeedsandendingpublicapiaccessbecauseofaibots": {
+      "title": "Reddit is killing RSS feeds and ending public API access because of AI bots",
+      "link": "https://techcrunch.com/2026/09/30/reddit-is-killing-rss-feeds-ending-public-api-access-because-of-ai-bots/",
+      "desc": "Reddit is ending support for RSS feeds, as the company continues tightening access to its trove of user-generated content.",
+      "score": 4,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
+    },
+    "instagramrollsoutanaivideoassistantforcreators": {
+      "title": "Instagram rolls out an AI video assistant for creators",
+      "link": "https://techcrunch.com/2026/09/30/instagram-rolls-out-an-ai-video-assistant-for-creators/",
+      "desc": "This conversational AI assistant is intended to provide personalized feedback to creators, rather than generic advice.",
+      "score": 4,
+      "source": "techcrunch",
+      "seen": "2026-10-04T06:07:31+00:00"
     }
   },
-  "last_run": "2026-09-28T14:44:07+00:00"
+  "last_run": "2026-10-04T06:07:34+00:00"
 }
