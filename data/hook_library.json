@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-03T07:02:23+00:00",
+  "updated": "2026-10-04T06:09:27+00:00",
   "hooks": [
     {
       "template": "Stop losing leads because your {alt} setup takes too long to load.",
@@ -459,6 +459,177 @@
       "uses": 0,
       "source": "research",
       "added": "2026-10-03"
+    },
+    {
+      "template": "Stop doing {alt} manually. {name} automates the whole thing for {price}.",
+      "topic": "automation",
+      "flavor": "painpoint",
+      "why": "Highlights tedious manual work and offers an instant fix.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "We tested {name} for a week. Here is what happened to our {benefit}.",
+      "topic": "productivity",
+      "flavor": "proof",
+      "why": "Real-world testing builds instant trust and credibility.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "Why pay {alt} prices when {name} delivers better {benefit} for {price}?",
+      "topic": "sell",
+      "flavor": "objection",
+      "why": "Directly tackles cost concerns with a cheaper alternative.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "83% of professionals waste hours on {alt} instead of using {name}.",
+      "topic": "productivity",
+      "flavor": "numbers",
+      "why": "Stat-driven hook creates immediate fear of missing out.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "We replaced three separate tools with {name}. Here is our exact setup.",
+      "topic": "productivity",
+      "flavor": "proof",
+      "why": "Demonstrates extreme efficiency and value.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "We spent 30 days testing {name}. The {benefit} results shocked us.",
+      "topic": "sell",
+      "flavor": "proof",
+      "why": "Time-tested review builds high authority.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "Too expensive? {name} gives you full {benefit} starting at {price}.",
+      "topic": "sell",
+      "flavor": "objection",
+      "why": "Crushes price objections right out of the gate.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "The weird trick {name} uses to deliver {benefit} in seconds.",
+      "topic": "ai",
+      "flavor": "curiosity",
+      "why": "Unusual method sparks instant intrigue.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "Don't buy {alt} until you've tested {name} during its {trial}.",
+      "topic": "sell",
+      "flavor": "objection",
+      "why": "Saves the user money by suggesting a better trial path.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "Stop paying monthly fees for {alt} when {name} offers {trial}.",
+      "topic": "sell",
+      "flavor": "painpoint",
+      "why": "Direct appeal to subscription fatigue.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "The exact {name} workflow we use to generate {benefit} daily.",
+      "topic": "ai",
+      "flavor": "curiosity",
+      "why": "Exclusive process reveal invites copying.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "From endless {alt} spreadsheet tabs to one clean dashboard on {name}.",
+      "topic": "productivity",
+      "flavor": "transformation",
+      "why": "Relatable desk clutter to streamlined visual.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "The hidden setting inside {name} that supercharges your {benefit}.",
+      "topic": "ai",
+      "flavor": "curiosity",
+      "why": "Easter egg feature promise creates FOMO.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "Why top agencies are quietly replacing {alt} with {name}.",
+      "topic": "ai",
+      "flavor": "curiosity",
+      "why": "Insiders-only behavior sparks intense curiosity.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "No budget for {alt}? {name} provides {benefit} completely free.",
+      "topic": "sell",
+      "flavor": "objection",
+      "why": "Solves budget constraints with zero-cost option.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "Watch how quickly {name} turns raw ideas into finished {benefit}.",
+      "topic": "ai",
+      "flavor": "transformation",
+      "why": "Visual demonstration of instant creation.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "Stop typing everything by hand. Let {name} handle your {benefit}.",
+      "topic": "automation",
+      "flavor": "painpoint",
+      "why": "Fights keyboard fatigue with automation.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "The psychology behind why {name} outperforms every {alt} tool.",
+      "topic": "social",
+      "flavor": "curiosity",
+      "why": "Combines behavioral science with software choice.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
+    },
+    {
+      "template": "From messy drafts to polished {benefit} using {name} automation.",
+      "topic": "email",
+      "flavor": "transformation",
+      "why": "Clear structural polish upgrade.",
+      "uses": 0,
+      "source": "research",
+      "added": "2026-10-04"
     }
   ]
 }
