@@ -58,7 +58,8 @@ to Explore. Fixing the opening is upstream of every other metric.
 - Keyword repeated naturally 2–3 more times; no stuffing (confuses the
   ranking model).
 - **3–5 hashtags**, relevant, camelCase (#SaasTools). We run 5 folded
-  into the caption (+ #ad in the disclosure line).
+  into the caption; the disclosure line is plain English ("Affiliate link
+  — we may earn a small commission…", no #ad — user decision 2026-10-05).
 - **On-screen text is read by IG's AI** — keyword phrases in slide text
   help ranking too (our slides now carry them).
 - One **specific** engagement question in the caption drives comments;
@@ -88,14 +89,21 @@ to Explore. Fixing the opening is upstream of every other metric.
 - Brightness/chroma lift + thinner scrims (measured mean luminance
   77.6 → 115.3) — a dim first frame was part of the skip problem.
 
-## Measurement gaps (fix when convenient)
+## Measurement (updated 2026-10-05, later same evening)
 
-- **Skip rate is only readable in the IG app right now.** The Graph API
-  needs the `instagram_manage_insights` scope, which our token lacks —
-  re-run `scripts/setup_tokens.py` with that scope added and we can pull
-  per-reel skip rate / watch time programmatically.
-- Same story for `instagram_manage_comments` (first-comment hashtags).
-- Compare like with like: only benchmark tonight's reel against reels of
-  similar length/format (median of last 10–20), change one variable at a
-  time (tonight's variable: hook + brightness together is deliberate —
-  both were failures, not experiments).
+- **Scope granted**: token re-minted with `instagram_manage_insights` +
+  `instagram_manage_comments` (9 scopes, never-expiring). `insights.py`
+  now prints avg watch time per reel (views + total watch time from the
+  Graph API) — first pull: framer 10-05, pictory 10-04, canva 10-03,
+  notion 10-02 all readable.
+- **Skip rate itself has no Graph API metric** — it stays an IG-app
+  reading (Reel → ⋯ → View insights → "Skipped"). Avg watch time is the
+  programmatic proxy for retention.
+- First-comment hashtags now post for real (`instagram_manage_comments`),
+  so captions get cleaner and tags move out of the caption body.
+- **GitHub secret `ACCESS_TOKEN` must be replaced manually** with the
+  new token or CI keeps using the old scope set.
+- Compare like with like: only benchmark reels of similar length/format
+  (median of last 10–20), change one variable at a time (tonight's
+  variable: hook-first intro + brightness together — both were fixes,
+  not experiments).

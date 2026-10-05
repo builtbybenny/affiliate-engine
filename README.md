@@ -99,7 +99,7 @@ python scripts/insights.py
 - Add 2–3 fresh products; prune dead links from `products.csv`.
 
 ## Compliance (keep your accounts safe)
-- Every caption ends with the affiliate disclosure (`#ad` + commission note).
+- Every caption ends with the plain-English affiliate disclosure (commission note).
 - Use `rel="nofollow sponsored"` on bio links (already in the bio page builder).
 - Never spam links in comments; keep them in bio/DMs.
 - Follow each network's affiliate program terms (Amazon Associates requires

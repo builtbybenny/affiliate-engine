@@ -63,7 +63,10 @@ CTA_LINES = [
     "🔗 Bio link → try the free tier yourself, no card needed",
 ]
 
-DISCLOSURE = "Affiliate link — we may earn a small commission at no extra cost to you. #ad"
+# Plain-English FTC disclosure (user decision 2026-10-05): a full sentence
+# beats a #ad hashtag — clearer to readers, still satisfies affiliate-program
+# terms (the word "affiliate" is right there). Caption shows 5 hashtags now.
+DISCLOSURE = "Affiliate link — we may earn a small commission at no extra cost to you."
 
 # Fallback hashtag pool if data/hashtags.txt is missing (SaaS/tech).
 DEFAULT_HASHTAGS = [

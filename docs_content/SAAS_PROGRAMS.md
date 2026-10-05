@@ -32,6 +32,6 @@ before applying — programs change. Start with 3–5, don't join everything.
 ## Rules for links
 
 1. One link per tool, all on your bio page (built by `scripts/build_link_page.py`).
-2. Every caption keeps the `#ad` disclosure (engine adds it automatically).
+2. Every caption keeps the plain-English affiliate disclosure (engine adds it automatically).
 3. Track with each program's dashboard; add UTM `?utm_source=instagram` variants
    in `products.csv` so you can compare IG vs FB.
