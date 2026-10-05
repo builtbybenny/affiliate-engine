@@ -3,11 +3,14 @@
 Three-scene structure (2026-10-04 quality pass; 2026-10-05 retention pass):
   1. INTRO     - the HOOK big in center — the promise must own the first
                  frame (skip rate is decided in the first 3 seconds).
-                 Product name stays in the accent chip on EVERY frame.
+                 Product name sits under the hero hook, no chips.
   2. BENEFITS  - one line at a time, whole-block rise+fade (no ghost-word
-                 flashing), index badge, product chip pinned top-right
-  3. OUTRO     - end card: product name + trial + big CTA, then a 0.5s fade
-                 to black so the video never hard-cuts.
+                 flashing), index badge, product chip top-right (hook
+                 reminder top-left area, CTA pill only on the LAST line)
+  3. OUTRO     - end card: product name + trial + big CTA + handle, then
+                 a 0.5s fade to black so the video never hard-cuts.
+  Chrome (2026-10-05 cleanup): no brand chip (IG's UI shows the handle),
+  no constant free-trial pill — selling happens twice, not 100% of frames.
 Duration adapts to line count (~2.6s/line) unless explicitly passed.
 Background priority: data/product_images/<id>.jpg (your screenshot) ->
 Pexels stock photo (needs PEXELS_API_KEY, cached in data/stock/) ->
@@ -122,19 +125,25 @@ def _draw_caption(
 
 
 def _draw_chrome(
-    frame: Image.Image, hook: str, brand: str, progress: float,
+    frame: Image.Image, hook: str, progress: float,
     palette: tuple, product_name: str = "", show_hook: bool = True,
-    show_cta: bool = True,
+    show_cta: bool = False,
 ) -> None:
+    """Persistent overlay: hook + product chip + progress (+ CTA, late only).
+
+    2026-10-05 chrome cleanup (user-ratified "cleaner is better"):
+      - brand chip REMOVED: IG's player already shows @stackandsavehq on
+        every frame; a second on-screen logo was ad-signal + clutter.
+      - CTA pill is late-only (final benefit line): a constant free-trial
+        pill on 100% of frames reads as a loud ad — the outro card, the
+        caption CTA and the bio link carry the ask.
+      - product chip shows during benefits only (intro hero and outro card
+        both name the tool much bigger).
+    """
     draw = ImageDraw.Draw(frame, "RGBA")
     accent = common.hex_to_rgb(palette[2])
 
-    # Brand chip top-left
-    f = common.font(40, bold=True)
-    draw.rounded_rectangle((60, 150, 60 + f.getlength(brand) + 44, 226), radius=38, fill=(0, 0, 0, 120))
-    draw.text((82, 168), brand, font=f, fill=(255, 255, 255, 240))
-
-    # Product chip top-right: the app is named on EVERY frame.
+    # Product chip top-right: the app is named while benefits play.
     if product_name:
         label = product_name[:24]
         fp = common.font(40, bold=True)
@@ -168,8 +177,8 @@ def _draw_intro(frame: Image.Image, product: dict, palette: tuple, t: float,
     """Scene 1: the HOOK big — the promise owns the first frame.
 
     2026-10-05 retention pass: leading with the product name big was a
-    brand-intro, the top skip trigger; the app is still named in the
-    accent chip (top-right) on every frame and in the outro card.
+    brand-intro, the top skip trigger. No chips here either — the frame
+    is promise + product name + nothing else.
     """
     a = _ease(t / 0.30)  # faster than before: legible within ~0.3s
     if a <= 0.01:
@@ -338,23 +347,25 @@ def build_reel(
             frame = _scrim(frame)
             progress = t / duration
             if t < intro:
-                # Hook owns the intro (hero text); chrome keeps chips only
-                # so the hook isn't printed twice at once.
-                _draw_chrome(frame, hook, config.BRAND_HANDLE, progress,
-                             palette, product_name=name, show_hook=False)
+                # Hook owns the intro (hero text); no chips, no CTA —
+                # the frame is the promise and nothing else.
+                _draw_chrome(frame, hook, progress, palette,
+                             show_hook=False)
                 _draw_intro(frame, product, palette, t, hook=hook)
             elif t < intro + mid:
                 idx = min(n_lines - 1, int((t - intro) / slice_t))
                 local_t = t - intro - idx * slice_t
-                _draw_chrome(frame, hook, config.BRAND_HANDLE, progress,
-                             palette, product_name=name)
+                # CTA pill is late-only: it appears with the final
+                # benefit line and walks straight into the outro card.
+                _draw_chrome(frame, hook, progress, palette,
+                             product_name=name,
+                             show_cta=(idx == n_lines - 1))
                 _draw_caption(frame, lines[idx], local_t, slice_t, palette,
                               index=idx + 1, total=n_lines)
             else:
                 _draw_outro(frame, product, palette)
-                _draw_chrome(frame, hook, config.BRAND_HANDLE, progress,
-                             palette, product_name=name,
-                             show_hook=False, show_cta=False)
+                _draw_chrome(frame, hook, progress, palette,
+                             show_hook=False)
             _fade_to_black(frame, t, duration)
             frame.convert("RGB").save(frames_dir / f"f_{i:05d}.jpg", "JPEG", quality=88)
 
