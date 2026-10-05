@@ -63,12 +63,12 @@ def _hook_slide(product: dict, hook: str, palette: tuple, bg_img: Image.Image | 
     top, bottom, accent_hex, text = palette
     accent = common.hex_to_rgb(accent_hex)
     base = (
-        common.cover_crop(bg_img, W, H).convert("RGBA")
+        common.vivid(common.cover_crop(bg_img, W, H)).convert("RGBA")
         if bg_img
-        else common.vertical_gradient((W, H), top, bottom).convert("RGBA")
+        else common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
     )
     if bg_img:
-        base = _scrim(base, 165)
+        base = _scrim(base, 110)
     else:
         _soft_accent_blobs(base, accent)
     draw = ImageDraw.Draw(base, "RGBA")
@@ -89,7 +89,7 @@ def _content_slide(
     W, H = 1080, 1350
     top, bottom, accent_hex, text = palette
     accent = common.hex_to_rgb(accent_hex)
-    base = common.vertical_gradient((W, H), top, bottom).convert("RGBA")
+    base = common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
     _soft_accent_blobs(base, accent)
     draw = ImageDraw.Draw(base, "RGBA")
 
@@ -113,7 +113,7 @@ def _cta_slide(product: dict, palette: tuple, slide_count: int) -> Image.Image:
     W, H = 1080, 1350
     top, bottom, accent_hex, text = palette
     accent = common.hex_to_rgb(accent_hex)
-    base = common.vertical_gradient((W, H), top, bottom).convert("RGBA")
+    base = common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
     _soft_accent_blobs(base, accent)
     draw = ImageDraw.Draw(base, "RGBA")
 

@@ -87,6 +87,27 @@ def load_hashtags() -> list[str]:
     return DEFAULT_HASHTAGS
 
 
+_BANNED_HOOK_WORDS = (
+    "supercharge", "unlock", "game-chang", "seamless", "next level",
+    "take it to the next", "elevate", "revolutioni",
+)
+
+
+def punchy(line: str) -> bool:
+    """Quality gate for hook lines (2026-10-05 content review).
+
+    A hook must be a statement that lands: not a soft question, not hype
+    filler, not a run-on. Failing hooks fall back to the concept bank.
+    """
+    line = (line or "").strip()
+    if not line or len(line.split()) > 14:
+        return False
+    if line.endswith("?"):
+        return False
+    low = line.lower()
+    return not any(w in low for w in _BANNED_HOOK_WORDS)
+
+
 def pick_hook(theme: str, product: dict, rng: random.Random) -> str:
     hooks = HOOKS.get(theme) or HOOKS["saas_stack"]
     tpl = rng.choice(hooks)

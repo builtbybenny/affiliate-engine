@@ -51,6 +51,31 @@ def _ensure_product_named(caption: str, product: dict) -> str:
     return f"{caption}\n\n{line}"
 
 
+def apply_punch_gate(ai_copy: dict | None, template_hook: str, concept: dict,
+                     product: dict, rng) -> str:
+    """Pick the hook that actually ships (2026-10-05 content review).
+
+    AI hook wins when present — the template hook is the fallback, not the
+    boss. Exception: the punch gate — soft questions / hype filler lose to
+    the researched or concept-bank statement. Also repairs a caption that
+    still opens with a question by swapping line 1 for the gated hook.
+    """
+    final_hook = (ai_copy or {}).get("hook") or template_hook
+    if not copywriter.punchy(final_hook):
+        final_hook = (
+            template_hook if copywriter.punchy(template_hook)
+            else copywriter.hook_from_concept(concept, product, rng)
+        )
+        if ai_copy:
+            ai_copy["hook"] = final_hook
+    if ai_copy:
+        cap_lines = ai_copy.get("caption", "").split("\n")
+        if cap_lines and cap_lines[0].strip().endswith("?"):
+            cap_lines[0] = final_hook
+            ai_copy["caption"] = "\n".join(cap_lines)
+    return final_hook
+
+
 def plan_slot(for_date: _date, fmt: str, products: list[dict], record: bool = True) -> dict:
     """Decide product + concept for a slot and return the plan dict."""
     product = planner.pick_product_lru(for_date, products)
@@ -125,10 +150,7 @@ def main() -> None:
         else:
             print("  copy: templates")
 
-        # AI hook wins when present — the template hook is the fallback,
-        # not the boss. (Without this, template grammar bugs could
-        # overwrite clean AI-written hooks.)
-        final_hook = (ai_copy or {}).get("hook") or hook
+        final_hook = apply_punch_gate(ai_copy, hook, concept, product, rng)
 
         if fmt == "carousel":
             files, texts = carousel.build_carousel(

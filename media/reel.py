@@ -59,7 +59,9 @@ def _base_frame(bg: Image.Image, t_norm: float) -> Image.Image:
 
 
 def _scrim(frame: Image.Image) -> Image.Image:
-    overlay = Image.new("RGBA", frame.size, (0, 0, 0, 110))
+    # 110 was double-dimming: dark source image + heavy veil on top.
+    # 60 keeps white type readable while the footage stays lit.
+    overlay = Image.new("RGBA", frame.size, (0, 0, 0, 60))
     return Image.alpha_composite(frame, overlay)
 
 
@@ -103,7 +105,7 @@ def _draw_caption(
     band = Image.new("RGBA", frame.size, (0, 0, 0, 0))
     bd = ImageDraw.Draw(band)
     bd.rounded_rectangle((60, y - 90, W - 60, y + 170), radius=36,
-                         fill=(0, 0, 0, int(90 * a)))
+                         fill=(0, 0, 0, int(70 * a)))
     frame.alpha_composite(band)
     draw = ImageDraw.Draw(frame, "RGBA")
 
@@ -183,7 +185,7 @@ def _draw_intro(frame: Image.Image, product: dict, palette: tuple, t: float) -> 
 
 def _draw_outro(frame: Image.Image, product: dict, palette: tuple) -> None:
     """Scene 3: end card — name, trial, big CTA. The reel lands instead of stopping."""
-    frame.alpha_composite(Image.new("RGBA", frame.size, (0, 0, 0, 130)))
+    frame.alpha_composite(Image.new("RGBA", frame.size, (0, 0, 0, 85)))
     accent = common.hex_to_rgb(palette[2])
     draw = ImageDraw.Draw(frame, "RGBA")
     common.draw_fitted(
@@ -283,7 +285,7 @@ def build_reel(
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     total_frames = int(duration * FPS)
-    bg = common.cover_crop(src, W, H)
+    bg = common.vivid(common.cover_crop(src, W, H))
 
     with tempfile.TemporaryDirectory() as tmp:
         frames_dir = Path(tmp) / "frames"
@@ -304,13 +306,20 @@ def build_reel(
 
         n_lines = len(lines)
         name = product["name"]
+        vivid_cache: dict[int, Image.Image] = {}
         for i in range(total_frames):
             t = i / FPS
             if video_frames:
-                vf = Image.open(video_frames[i % len(video_frames)])
-                frame = common.cover_crop(vf, W, H).convert("RGBA")
+                j = i % len(video_frames)
+                if j not in vivid_cache:
+                    vf = Image.open(video_frames[j])
+                    vivid_cache[j] = common.vivid(
+                        common.cover_crop(vf, W, H).convert("RGB")
+                    ).convert("RGBA")
+                frame = vivid_cache[j]
             else:
                 frame = _base_frame(bg, t / duration)
+            # _scrim returns a fresh image, so the cached vivid frame is safe
             frame = _scrim(frame)
             progress = t / duration
             if t < intro:

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 from core import config
 
@@ -67,6 +67,19 @@ def find_font(bold: bool = True, weight: str = "") -> str:
                 continue
             return p
     return ""
+
+
+def vivid(img: Image.Image, brightness: float = 1.18, color: float = 1.22,
+          contrast: float = 1.04) -> Image.Image:
+    """Lift a background out of the 'phone on 60% brightness' look.
+
+    Dark scrims + dark palettes stacked up over sessions until every render
+    read as dim and washed of color. Applied to the BASE image only (before
+    scrims and text), so white type keeps its contrast budget.
+    """
+    img = ImageEnhance.Brightness(img).enhance(brightness)
+    img = ImageEnhance.Color(img).enhance(color)
+    return ImageEnhance.Contrast(img).enhance(contrast)
 
 
 def font(size: int, bold: bool = True, weight: str = "") -> ImageFont.FreeTypeFont:

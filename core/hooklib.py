@@ -141,7 +141,9 @@ def pick(product: dict, concept_id: str, for_date: date, rng: random.Random,
 
     # Deterministic pre-sort, then a seeded sample from the best 60% so
     # the feed varies day to day without ever picking a poor fit.
-    ranked = sorted(hooks, key=score)
+    # Soft-question hooks (ending in '?') rank dead last: 2026-10-05 review
+    # found the model latching onto them and opening posts with mush.
+    ranked = sorted(hooks, key=lambda h: (str(h.get("template", "")).strip().endswith("?"), score(h)))
     pool = ranked[: max(count, (len(ranked) * 6) // 10)]
     rng.shuffle(pool)
 

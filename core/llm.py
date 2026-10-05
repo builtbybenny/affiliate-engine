@@ -132,7 +132,16 @@ SYSTEM_BRIEF = (
     "life. Introduce the tool name only AFTER the reader feels understood, as "
     "the answer to that moment. Plain words a non-tech person gets: no jargon "
     "like CRM, CMS, funnel builder, no-code unless you first explain the "
-    "everyday situation they solve."
+    "everyday situation they solve.\n\n"
+    "PUNCH RULE (2026-10-05 quality pass): every line must hit like a claim, "
+    "not a suggestion. Hooks are STATEMENTS with tension — a number, a cost, "
+    "a before/after gap, or a specific absurdity ('Your dead site loses you a "
+    "customer every 30 seconds'). BANNED: soft rhetorical questions as the "
+    "hook ('Tired of X?'), vague hype ('take it to the next level', "
+    "'supercharge', 'unlock', 'game-changing', 'seamless'), and any line that "
+    "could describe 10 different tools unchanged. If a line works for a "
+    "competitor's post as-is, rewrite it until it only fits this tool. Numbers "
+    "beat adjectives. Keep hook lines under 10 words."
 )
 
 
@@ -170,10 +179,13 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         "SCROLLER-FIRST STRUCTURE:\n"
         + (
             '- "hook": open with the researched hook structure you chose, '
-            "compressed to max 9 words, curiosity/number/pain-led.\n"
+            "compressed to max 9 words — a hard claim with a number or cost "
+            "in it, never a soft question.\n"
             if hook_ideas else
             '- "hook": the human moment (pain/cost/chaos the scroller recognizes) '
-            "in plain words; do NOT put the tool or competitor name in the hook.\n"
+            "as a hard claim with a number where possible (max 9 words); "
+            "do NOT put the tool or competitor name in the hook, and do NOT "
+            "open with a rhetorical question.\n"
         )
         + "- Slides: first 1-2 slides deepen the human moment or the old painful "
         "way WITHOUT assuming the scroller knows the category; middle slides "
@@ -186,8 +198,9 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         "Return STRICT JSON with keys:\n"
         '  "hook": slide-1 headline, max 9 words, curiosity or number-led;\n'
         '  "slides": 3-5 strings, max 8 words each, one benefit or proof point per slide;\n'
-        '  "caption": 60-120 words. Line 1 = hook rephrase. Then 2-4 short lines '
-        "with one benefit each using the bullet char •. Then one CTA line about "
+        '  "caption": 60-120 words. Line 1 = the hook restated as an absolute statement (no questions, no throat-clearing). Then 2-4 short lines '
+        "with one SPECIFIC benefit each using the bullet char • (a concrete "
+        "outcome or number, never 'powerful features'). Then one CTA line about "
         f"the free trial{' (' + trial + ')' if trial else ''}. "
         "End with: 'Affiliate link - we may earn a commission at no extra cost to you. #ad'\n"
         "No other keys. JSON only."

@@ -32,10 +32,10 @@ def _hook_slide(
     top, bottom, accent_hex, _ = palette
     accent = common.hex_to_rgb(accent_hex)
     if bg_img is not None:
-        base = common.cover_crop(bg_img, W, H).convert("RGBA")
-        base = Image.alpha_composite(base, Image.new("RGBA", base.size, (0, 0, 0, 170)))
+        base = common.vivid(common.cover_crop(bg_img, W, H)).convert("RGBA")
+        base = Image.alpha_composite(base, Image.new("RGBA", base.size, (0, 0, 0, 110)))
     else:
-        base = common.vertical_gradient((W, H), top, bottom).convert("RGBA")
+        base = common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
         # accent blobs only on the gradient path (they fight with photos)
         layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         d2 = ImageDraw.Draw(layer)
@@ -72,7 +72,7 @@ def _item_slide(item: dict, index: int, total: int, palette: tuple) -> Image.Ima
     W, H = 1080, 1350
     top, bottom, accent_hex, _ = palette
     accent = common.hex_to_rgb(accent_hex)
-    base = common.vertical_gradient((W, H), top, bottom).convert("RGBA")
+    base = common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
     draw = ImageDraw.Draw(base, "RGBA")
 
     ghost = common.font(300, bold=True, weight="black")
@@ -96,7 +96,7 @@ def _cta_slide(keyword: str, page_hint: str, palette: tuple, total: int) -> Imag
     W, H = 1080, 1350
     top, bottom, accent_hex, _ = palette
     accent = common.hex_to_rgb(accent_hex)
-    base = common.vertical_gradient((W, H), top, bottom).convert("RGBA")
+    base = common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
     draw = ImageDraw.Draw(base, "RGBA")
 
     common.draw_fitted(
