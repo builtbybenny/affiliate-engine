@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from core.boot import setup_console; setup_console()
 
-from core import config, copywriter, planner, concepts, llm, hooklib
+from core import config, copywriter, planner, concepts, llm, briefs
 from media import carousel, reel
 
 
@@ -116,19 +116,25 @@ def main() -> None:
         concept = concepts.CONCEPTS[plan["concept"]]
         rng = random.Random(for_date.toordinal() + (0 if fmt == "carousel" else 1))
 
-        # Internet-researched hooks (scripts/hook_research.py): product-
-        # and concept-matched. Empty when the library hasn't been built —
-        # then everything behaves exactly as before (concept banks).
-        hook_ideas = hooklib.pick(
-            product, plan["concept"], for_date, rng,
-            count=5, record=not args.dry_run,
-        )
-        # Template hook: researched hook first, concept bank as fallback.
-        hook = (hook_ideas[0] if hook_ideas else "") or copywriter.hook_from_concept(concept, product, rng)
+        # Research brief (core/briefs): real blog facts + search keywords
+        # for THIS product, refreshed weekly in CI and lazily when stale.
+        # The static hook bank was dumped 2026-10-05 — hooks are now written
+        # and retention-scored per post (llm.pick_retention_hook).
+        try:
+            brief = briefs.get(product, refresh=not args.dry_run)
+        except Exception:
+            brief = {}
+        brief_note = (
+            f"{len(brief.get('keywords', []))} kw / {len(brief.get('facts', []))} facts"
+            + (" (stale)" if brief.get("stale") else "")
+        ) if brief else "none"
+
+        # Template hook: concept bank as fallback when AI copy is down.
+        hook = copywriter.hook_from_concept(concept, product, rng)
 
         print(f"\n[{for_date}] {fmt.upper()} | concept={concept['label']} | product={product['name']}"
-              + ("  (honest rerun)" if plan["is_rerun"] else "")
-              + (f"  | {len(hook_ideas)} researched hooks" if hook_ideas else ""))
+              + ("  (honest rerun)" if plan["is_rerun"] else ""))
+        print(f"  brief  : {brief_note}")
 
         if args.dry_run:
             print("  hook   :", hook)
@@ -143,7 +149,7 @@ def main() -> None:
             fallback_hooks=concept["hooks"],
             fallback_slides=[],
             fallback_caption="",
-            hook_ideas=hook_ideas,
+            brief=brief,
         )
         if ai_copy:
             print("  copy: AI (Gemini)")

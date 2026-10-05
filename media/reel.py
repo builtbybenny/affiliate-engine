@@ -1,8 +1,9 @@
 """Reel factory: turn one product image into a 1080x1920 MP4 reel.
 
-Three-scene structure (2026-10-04 quality pass):
-  1. INTRO     - the product NAME revealed big under the hook (the app must
-                 be named on screen; the hook itself is pain-led by design)
+Three-scene structure (2026-10-04 quality pass; 2026-10-05 retention pass):
+  1. INTRO     - the HOOK big in center — the promise must own the first
+                 frame (skip rate is decided in the first 3 seconds).
+                 Product name stays in the accent chip on EVERY frame.
   2. BENEFITS  - one line at a time, whole-block rise+fade (no ghost-word
                  flashing), index badge, product chip pinned top-right
   3. OUTRO     - end card: product name + trial + big CTA, then a 0.5s fade
@@ -162,17 +163,29 @@ def _draw_chrome(
                             text_color=(15, 23, 42, 255))
 
 
-def _draw_intro(frame: Image.Image, product: dict, palette: tuple, t: float) -> None:
-    """Scene 1: the product name revealed big (app named in the first 3s)."""
-    a = _ease(t / 0.5)
+def _draw_intro(frame: Image.Image, product: dict, palette: tuple, t: float,
+                 hook: str = "") -> None:
+    """Scene 1: the HOOK big — the promise owns the first frame.
+
+    2026-10-05 retention pass: leading with the product name big was a
+    brand-intro, the top skip trigger; the app is still named in the
+    accent chip (top-right) on every frame and in the outro card.
+    """
+    a = _ease(t / 0.30)  # faster than before: legible within ~0.3s
     if a <= 0.01:
         return
     accent = common.hex_to_rgb(palette[2])
-    rise = int(40 * (1 - a))
+    rise = int(36 * (1 - a))
     draw = ImageDraw.Draw(frame, "RGBA")
+    if hook:
+        common.draw_fitted(
+            draw, hook, (72, 940 + rise, W - 72, 1310 + rise),
+            max_size=96, min_size=56, weight="black",
+            color=(255, 255, 255, int(255 * a)), align="center",
+        )
     common.draw_fitted(
-        draw, product["name"], (72, 1300 + rise, W - 72, 1470 + rise),
-        max_size=104, min_size=56, weight="black",
+        draw, product["name"], (72, 1350 + rise, W - 72, 1470 + rise),
+        max_size=72, min_size=48, weight="black",
         color=common.with_alpha(accent, int(255 * a)), align="center",
     )
     trial = (product.get("trial") or "").strip()
@@ -234,7 +247,7 @@ def build_reel(
     from the AI copywriter; template copy is the fallback. 'slides' become
     the on-screen benefit scenes (one line each).
 
-    duration: None = adaptive (~2.6s per line + 2.8s intro + 3s outro,
+    duration: None = adaptive (~2.6s per line + 1.9s intro + 3s outro,
     floor 15s). Explicit values are honored (verify scripts pass 4.0).
     """
     for_date = for_date or config.now_local().date()
@@ -275,8 +288,10 @@ def build_reel(
     )
 
     if duration is None:
-        duration = round(max(15.0, 2.8 + 3.0 + 2.6 * len(lines)), 1)
-    intro = min(2.8, duration * 0.18)
+        # Retention: benefits start before 2s — the old 2.8s brand intro
+        # spent the whole hook window on the product name.
+        duration = round(max(15.0, 1.9 + 3.0 + 2.6 * len(lines)), 1)
+    intro = min(1.9, duration * 0.18)
     outro = min(3.0, duration * 0.18)
     mid = max(0.6, duration - intro - outro)
     slice_t = mid / len(lines)
@@ -323,9 +338,11 @@ def build_reel(
             frame = _scrim(frame)
             progress = t / duration
             if t < intro:
+                # Hook owns the intro (hero text); chrome keeps chips only
+                # so the hook isn't printed twice at once.
                 _draw_chrome(frame, hook, config.BRAND_HANDLE, progress,
-                             palette, product_name=name)
-                _draw_intro(frame, product, palette, t)
+                             palette, product_name=name, show_hook=False)
+                _draw_intro(frame, product, palette, t, hook=hook)
             elif t < intro + mid:
                 idx = min(n_lines - 1, int((t - intro) / slice_t))
                 local_t = t - intro - idx * slice_t

@@ -13,11 +13,12 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 
 import requests
 
-from core import config
+from core import config, copywriter
 from core.boot import setup_console
 
 setup_console()
@@ -145,26 +146,105 @@ SYSTEM_BRIEF = (
 )
 
 
+def pick_retention_hook(options: list | None, model_pick: str = "") -> str:
+    """Choose the hook most likely to survive the first 3 seconds.
+
+    Candidates arrive from write_copy() as [{'text':..., 'score':...}] —
+    the model's self-score, adjusted by measurable retention signals
+    (a number on screen, brevity) and hard-filtered by the punch gate.
+    Chosen 2026-10-05: skip rate is upstream of every other metric, so
+    hook selection is code, not vibes.
+    """
+    best, best_score = "", -1
+    for opt in options or []:
+        if isinstance(opt, dict):
+            text, base = str(opt.get("text", "")).strip(), opt.get("score")
+        else:
+            text, base = str(opt).strip(), None
+        if not text or not copywriter.punchy(text) or len(text.split()) > 10:
+            continue
+        try:
+            score = int(base)
+        except Exception:
+            score = 50
+        if any(ch.isdigit() for ch in text):
+            score += 15          # numbers are read even at scroll speed
+        if len(text.split()) <= 8:
+            score += 10          # fits one glance on the first frame
+        if text.endswith("."):
+            score += 5           # landed statement, not trailing doubt
+        if score > best_score:
+            best, best_score = text, score
+    if best:
+        return best
+    mp = str(model_pick or "").strip()
+    return mp if mp and copywriter.punchy(mp) else ""
+
+
+def _reflow(text: str) -> str:
+    """Repair a caption the model returned as one wall of text.
+
+    Line breaks are the whole readability game on mobile — if the model
+    crammed its 5-7 intended lines into a paragraph, split at bullets and
+    sentence boundaries so every thought gets its own line.
+    """
+    if text.count("\n") >= 3:
+        return text
+    text = text.replace(" • ", "\n• ").replace(". •", ".\n•")
+    if text.count("\n") >= 3:
+        return text
+    # sentence-per-line fallback (IG-native formatting anyway)
+    text = re.sub(r"(?<=[.!?]) +(?=[A-Z•])", "\n", text)
+    return text
+
+
+def _fit_caption(caption: str) -> str:
+    """Keep the caption inside IG's 2,200-char cap with room for the folded
+    hashtag block (~90 chars), and guarantee the canonical disclosure line.
+    Cuts at a line boundary — never mid-sentence."""
+    text = _reflow((caption or "").strip())
+    text = text.replace("link below", "link in bio")  # reels link lives in bio
+    lines = [l for l in text.split("\n")
+             if not l.strip().startswith("Affiliate link")]
+    body: list[str] = []
+    for line in lines:
+        used = sum(len(x) + 1 for x in body)
+        if used + len(line) + 2 > 2000:
+            break
+        body.append(line)
+    out = "\n".join(body).strip()
+    if not out:
+        return ""
+    return out + "\n\n" + copywriter.DISCLOSURE
+
+
 def write_copy(product: dict, theme: str, fallback_hooks: list[str],
                fallback_slides: list[str], fallback_caption: str,
-               hook_ideas: list[str] | None = None) -> dict | None:
+               brief: dict | None = None) -> dict | None:
     """Returns {'hook': str, 'slides': [..], 'caption': str} or None on any failure.
 
-    hook_ideas: internet-researched hook strings for THIS product
-    (core/hooklib.pick). When present, the model must open with one of
-    their structures instead of reaching for the same generic angles.
+    brief: per-product research brief (core/briefs) — search keywords real
+    people use, attributable blog facts, buyer objections, pain-led angles.
+    Without it the model writes from product data alone.
+
+    The hook is chosen by pick_retention_hook() from 4 scored candidates;
+    the caption is the detailed SEO spec (2026-10-05 content review).
     """
     if not available():
         return None
     trial = (product.get("trial") or "").strip()
-    ideas_block = ""
-    if hook_ideas:
-        ideas = "\n".join(f"- {i}" for i in hook_ideas[:5])
-        ideas_block = (
-            "\nRESEARCHED HOOKS (proven click-structures for this product — "
-            "the hook MUST use one of these structures, rewritten to fit "
-            "this tool's specifics; do not invent a different angle):\n"
-            f"{ideas}\n"
+    brief = brief or {}
+    research_block = ""
+    if brief:
+        def _lines(key: str) -> str:
+            return "\n".join(f"- {v}" for v in brief.get(key, [])[:8]) or "- (none)"
+        research_block = (
+            "\nRESEARCHED FOR THIS TOOL (from real news + marketing blogs — "
+            "ground the caption in these, never invent facts):\n"
+            "Search phrases people actually type:\n" + _lines("keywords") + "\n"
+            "Facts/stats you may cite (keep the source note):\n" + _lines("facts") + "\n"
+            "Buyer objections to answer:\n" + _lines("objections") + "\n"
+            "Pain-led angle seeds (rewrite them, don't quote):\n" + _lines("angles") + "\n"
         )
     prompt = (
         f"{SYSTEM_BRIEF}\n\n"
@@ -175,46 +255,92 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         f"Price: {product.get('currency', '')} {product.get('price', '')}\n"
         f"Competitor to position against: {product.get('alt', 'the old way')}\n"
         f"Post theme: {theme}\n"
-        f"{ideas_block}\n"
+        f"{research_block}\n"
+        "RETENTION RULES (skip rate decides distribution — first 3 seconds are "
+        "the whole game):\n"
+        "- The hook is a PROMISE the first on-screen scene repays immediately; "
+        "it must be readable with sound off in one glance (max 9 words).\n"
+        "- Specificity beats drama: numbers, dollars, minutes, before/after gaps. "
+        "A hook that fits 10 different tools is dead.\n"
+        "- Never open with the product or brand name — the frame already shows it. "
+        "Pain first, tool as the answer. Never a soft question.\n"
+        "- No intro energy: no 'hey', no context-setting, no 'in this post'.\n\n"
         "SCROLLER-FIRST STRUCTURE:\n"
-        + (
-            '- "hook": open with the researched hook structure you chose, '
-            "compressed to max 9 words — a hard claim with a number or cost "
-            "in it, never a soft question.\n"
-            if hook_ideas else
-            '- "hook": the human moment (pain/cost/chaos the scroller recognizes) '
-            "as a hard claim with a number where possible (max 9 words); "
-            "do NOT put the tool or competitor name in the hook, and do NOT "
-            "open with a rhetorical question.\n"
-        )
-        + "- Slides: first 1-2 slides deepen the human moment or the old painful "
-        "way WITHOUT assuming the scroller knows the category; middle slides "
-        "reveal the tool as the fix with one concrete benefit each; last "
-        "slide = free-trial CTA.\n"
-        '- "caption" line 1: the human moment again, no tool name. The literal '
-        f"product name '{product['name']}' MUST appear in the caption body "
-        "(one middle line introduces it as the fix — never leave the reader "
-        "without the name). Never name the competitor in the caption.\n\n"
-        "Return STRICT JSON with keys:\n"
-        '  "hook": slide-1 headline, max 9 words, curiosity or number-led;\n'
-        '  "slides": 3-5 strings, max 8 words each, one benefit or proof point per slide;\n'
-        '  "caption": 60-120 words. Line 1 = the hook restated as an absolute statement (no questions, no throat-clearing). Then 2-4 short lines '
-        "with one SPECIFIC benefit each using the bullet char • (a concrete "
-        "outcome or number, never 'powerful features'). Then one CTA line about "
-        f"the free trial{' (' + trial + ')' if trial else ''}. "
-        "End with: 'Affiliate link - we may earn a commission at no extra cost to you. #ad'\n"
-        "No other keys. JSON only."
+        '- "hook_options": 4 candidate hooks — each a statement under 10 words, '
+        "each seeded from the researched angles where they fit, each with "
+        '"score": 0-100 for how likely it survives the first 3 seconds '
+        "(reward: a number, immediate problem recognition, a concrete cost; "
+        "punish: vagueness, tool-name openings, anything a competitor could say).\n"
+        '- "hook": your single best pick from hook_options;\n'
+        "- Slides: first 1-2 slides deepen the human moment the hook opened; "
+        "middle slides reveal the tool as the fix with one concrete benefit each; "
+        "last slide = free-trial CTA.\n\n"
+        "SEO CAPTION SPEC (detailed — this caption is meant to rank in IG + "
+        "Google search):\n"
+        "- 170-240 words.\n"
+        "- Line 1: a primary search phrase woven into the hook statement — an "
+        "absolute claim, never a question, never tool-name-first. The primary "
+        "search phrase must appear within the first two lines. The literal "
+        f"product name '{product['name']}' MUST appear in the body (one middle "
+        "line introduces it as the fix). Never name the competitor.\n"
+        "- Never invent trial lengths, discounts, promo codes, or prices — use "
+        "only the Free trial / Price values given above.\n"
+        "- The caption MUST use literal line breaks: 5-7 separate lines, one "
+        "thought per line, each • bullet on its own line — never one paragraph.\n"
+        "- Body: 3-5 short lines. Repeat the primary keyword phrase naturally "
+        "2 more times and one secondary phrase. Cite 2 researched facts with "
+        "their short source note. Benefits as • lines with real numbers.\n"
+        "- Any CTA says 'link in bio' (never 'link below').\n"
+        "- Keep each cited fact's (source: ...) note exactly as given.\n"
+        "- Example of the SHAPE expected (write your own content, same bones):\n"
+        "  Stop paying for tools you open twice a month.\n"
+        "  [primary search phrase] + the old way's cost, in one sentence.\n"
+        "  • Move your list over in one import, zero downtime\n"
+        "  • Free tier covers 2,000 subscribers (source: site pricing page)\n"
+        "  Which would you migrate first — your list or your automations?\n"
+        "  ToolName does this in one click and charges nothing until you scale.\n"
+        "  Start free with the link in bio — no card needed.\n"
+        "  (that shape runs 170-240 words when the lines carry real detail)\n"
+        "- Answer ONE buyer objection from the researched list in plain words.\n"
+        "- Exactly ONE specific engagement question after line 1 (references this "
+        "content, e.g. which benefit they'd use first) — comments are a ranking "
+        "signal.\n"
+        f"- One CTA line about the free trial{' (' + trial + ')' if trial else ''}.\n"
+        "- Do NOT write the affiliate disclosure — it is appended automatically.\n\n"
+        "Return STRICT JSON with keys: hook_options (4 objects), hook, slides "
+        "(3-5 strings, max 8 words each), caption. No other keys. JSON only."
     )
-    raw = _generate(prompt)
-    if not raw:
-        return None
-    try:
+    def _parse(raw: str) -> dict | None:
         data = json.loads(raw)
-        hook = str(data.get("hook", "")).strip()
+        options = data.get("hook_options") or []
+        hook = pick_retention_hook(options, str(data.get("hook", "")))
         slides = [str(s).strip() for s in data.get("slides", []) if str(s).strip()]
-        caption = str(data.get("caption", "")).strip()
+        caption = _fit_caption(str(data.get("caption", "")))
         if not (hook and slides and caption):
             return None
-        return {"hook": hook, "slides": slides[:5], "caption": caption[:2200]}
-    except Exception:
-        return None
+        return {"hook": hook, "slides": slides[:5], "caption": caption}
+
+    # Models undershoot length targets; one bounded retry (2026-10-05 the
+    # user picked max-detail captions — 130 words was consistently short).
+    attempt_prompt = prompt
+    last: dict | None = None
+    for _ in range(2):
+        raw = _generate(attempt_prompt)
+        if not raw:
+            return None
+        try:
+            out = _parse(raw)
+        except Exception:
+            return None
+        if out and len(out["caption"].split()) >= 160:
+            return out
+        if out:
+            last = out  # usable but short — retry once for more detail
+            out = None
+        attempt_prompt = (
+            prompt
+            + "\nIMPORTANT: your previous caption was under 160 words — too short "
+            "for this spec. Hit 170-240 words: add another • benefit line with a "
+            "real number, and give the objection answer two sentences of detail."
+        )
+    return last

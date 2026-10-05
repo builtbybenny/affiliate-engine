@@ -18,14 +18,14 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Trend radar scan
         run: python scripts/radar.py
-      - name: Hook research (harvest + distill)
+      - name: Research briefs (blogs -> per-product SEO keywords + facts)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python scripts/hook_research.py
-      - name: Commit radar + hook library
+        run: python scripts/research_brief.py --all
+      - name: Commit radar + research briefs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/radar_candidates.json data/radar_digest_*.md data/hook_library.json data/hook_research_log.json
-          git commit -m "evolve: weekly scan + hook research $(date -u +%F)" || echo "nothing new"
+          git add data/radar_candidates.json data/radar_digest_*.md data/research_briefs.json
+          git commit -m "evolve: weekly scan + research briefs $(date -u +%F)" || echo "nothing new"
           git push

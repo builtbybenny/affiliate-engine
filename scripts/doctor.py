@@ -127,14 +127,14 @@ def main() -> None:
         pass
 
     try:
-        from core import hooklib as _hooklib
-        _lib = _hooklib.load()
-        if _lib["hooks"]:
-            add(OK, f"hook library: {len(_lib['hooks'])} researched templates"
-                + (f" (updated {_lib['updated'][:10]})" if _lib.get("updated") else ""))
+        from core import briefs as _briefs
+        n, updated = _briefs.status()
+        if n:
+            add(OK, f"research briefs: {n} products with SEO keyword/fact briefs"
+                + (f" (updated {updated[:10]})" if updated else ""))
         else:
-            add(WARN, "hook library empty — posts fall back to built-in hooks",
-                "run: python scripts/hook_research.py (also runs weekly in CI)")
+            add(WARN, "no research briefs — captions fall back to product data",
+                "run: python scripts/research_brief.py --all (also runs weekly in CI)")
     except Exception:
         pass
 
