@@ -4,7 +4,8 @@
     "honest_versus::beehiiv",
     "hidden_feature::canva",
     "before_after::pictory",
-    "hidden_feature::framer"
+    "hidden_feature::framer",
+    "mistake_angle::gohighlevel"
   ],
   "product_last": {
     "systeme": "2026-09-30",
@@ -12,6 +13,7 @@
     "notion": "2026-10-02",
     "canva": "2026-10-03",
     "pictory": "2026-10-04",
-    "framer": "2026-10-05"
+    "framer": "2026-10-05",
+    "gohighlevel": "2026-10-06"
   }
 }
