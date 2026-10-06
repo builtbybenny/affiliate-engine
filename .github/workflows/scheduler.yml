@@ -82,6 +82,66 @@ jobs:
           print(f"{fmt} @ {utc:%H:%M}Z: {why}")
           PY
 
+      # Fail-fast guard for the 2026-10-06 outage: the ACCESS_TOKEN secret
+      # expired (code 190) and three runs burned a full generate+deploy before
+      # dying on the very first IG call. Validate the token up front so an
+      # expiry fails in seconds with a pointed error, not 11 minutes later.
+      - name: Meta token preflight (fail fast before the build)
+        if: steps.slot.outputs.run == 'true'
+        run: |
+          python - <<'PY'
+          import datetime, json, os, sys, time, urllib.error, urllib.parse, urllib.request
+
+          tok = os.environ.get("ACCESS_TOKEN", "")
+          ig = os.environ.get("IG_USER_ID", "")
+          app = os.environ.get("META_APP_ID", "")
+          sec = os.environ.get("META_APP_SECRET", "")
+          ver = os.environ.get("GRAPH_VERSION", "v23.0")
+
+          def die(msg):
+              print(f"::error::{msg}")
+              sys.exit(1)
+
+          def get(url):
+              try:
+                  with urllib.request.urlopen(url, timeout=20) as r:
+                      return json.load(r)
+              except urllib.error.HTTPError as e:
+                  body = e.read().decode("utf-8", "replace")
+                  try:
+                      return json.loads(body)
+                  except Exception:
+                      return {"error": {"message": body[:300], "code": e.code}}
+              except Exception as exc:
+                  return {"error": {"message": f"request failed: {exc}"}}
+
+          if not tok:
+              die("ACCESS_TOKEN secret is empty")
+          if app and sec:
+              resp = get(
+                  f"https://graph.facebook.com/{ver}/debug_token"
+                  f"?input_token={urllib.parse.quote(tok)}&access_token={urllib.parse.quote(app + '|' + sec)}"
+              )
+              data = resp.get("data") or {}
+              if not data:
+                  die(f"debug_token gave no data - refresh the ACCESS_TOKEN secret from .env: {resp}")
+              if not data.get("is_valid"):
+                  die(f"Meta token invalid/expired - refresh the ACCESS_TOKEN secret from .env: {data}")
+              exp = int(data.get("expires_at") or 0)
+              if exp and exp <= time.time() + 86400:
+                  when = datetime.datetime.fromtimestamp(exp, datetime.timezone.utc)
+                  die(f"Meta token expires {when:%Y-%m-%d %H:%MZ} - refresh the ACCESS_TOKEN secret now")
+              missing = sorted({"instagram_content_publish", "instagram_manage_comments"} - set(data.get("scopes") or []))
+              if missing:
+                  die(f"ACCESS_TOKEN is missing scopes: {missing}")
+              print(f"Meta token OK (expires_at={exp or 'never'})")
+          else:
+              probe = get(f"https://graph.facebook.com/{ver}/{ig}/media?fields=id&limit=1&access_token={urllib.parse.quote(tok)}")
+              if "error" in probe:
+                  die(f"Meta rejected ACCESS_TOKEN: {probe['error']}")
+              print("Meta token OK (live read; no app creds for debug_token)")
+          PY
+
       - name: Randomize exact time inside the slot
         if: steps.slot.outputs.run == 'true'
         run: sleep $((RANDOM % 170))
