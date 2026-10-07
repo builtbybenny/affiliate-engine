@@ -15,6 +15,7 @@ import json
 import os
 import re
 import time
+from pathlib import Path
 
 import requests
 
@@ -22,6 +23,24 @@ from core import config, copywriter
 from core.boot import setup_console
 
 setup_console()
+
+# Vendored marketing quality bar (skills/marketing/QUALITY_BAR.md — see
+# VENDORED.md). Prepended to the caption/hook prompt: a short, sharp list of
+# hard bans + composition rules distilled from coreyhaines31/marketingskills
+# (MIT, pinned f719a807). Missing file = skip gracefully: caption generation
+# must never die on a vendored text file.
+QUALITY_BAR_PATH = Path(__file__).resolve().parent.parent / "skills" / "marketing" / "QUALITY_BAR.md"
+
+
+def _quality_bar() -> str:
+    """Compact rule block for the prompt; '' when missing/unreadable."""
+    try:
+        text = QUALITY_BAR_PATH.read_text(encoding="utf-8")
+    except OSError:
+        print("  (marketing quality bar missing — continuing without)")
+        return ""
+    # strip the HTML provenance comment — prompt tokens only
+    return re.sub(r"<!--.*?-->\s*", "", text, flags=re.DOTALL).strip()
 
 API = "https://generativelanguage.googleapis.com/v1beta/models"
 
@@ -323,6 +342,12 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         if not (hook and slides and caption):
             return None
         return {"hook": hook, "slides": slides[:5], "caption": caption}
+
+    # Quality bar FIRST (fresh every call — the vendored file can change via
+    # marketing_distill without touching this code).
+    bar = _quality_bar()
+    if bar:
+        prompt = f"{bar}\n\n---\n\n{prompt}"
 
     # Models undershoot length targets; one bounded retry (2026-10-05 the
     # user picked max-detail captions — 130 words was consistently short).
