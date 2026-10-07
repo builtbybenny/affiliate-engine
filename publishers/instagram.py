@@ -89,13 +89,29 @@ def publish_reel(video_url: str, caption: str, share_to_feed: bool = True) -> st
 def post_first_comment(media_id: str, comment: str) -> str:
     """Requires instagram_business_manage_comments (IG Login) or
     instagram_manage_comments (FB Login). Best-effort: failures don't
-    block publishing — hashtags stay in the caption as fallback."""
-    try:
-        res = _post(f"{media_id}/comments", {"message": comment})
-        return res.get("id", "")
-    except IGError as e:
-        print(f"  (first-comment skipped: {e})")
-        return ""
+    block publishing — hashtags stay in the caption as fallback.
+
+    Root cause of every silent failure (found 2026-10-07): this call used
+    to omit access_token, and an unauthenticated Graph comment POST returns
+    the misleading code 100 "Object ... does not exist, cannot be loaded
+    due to missing permissions". The token was the whole bug; retries only
+    cover the residual genuine indexing lag right after media_publish
+    (~105s of max backoff — cheap insurance in CI)."""
+    delays = (15, 30, 60)
+    err = ""
+    for i in range(len(delays) + 1):
+        try:
+            res = _post(f"{media_id}/comments", {"message": comment, "access_token": config.ACCESS_TOKEN})
+            if i:
+                print(f"  IG first comment posted on attempt {i + 1}")
+            return res.get("id", "")
+        except IGError as e:
+            err = str(e)
+            if i < len(delays):
+                print(f"  (first-comment attempt {i + 1} failed: {err}); retrying in {delays[i]}s")
+                time.sleep(delays[i])
+    print(f"  (first-comment skipped after {len(delays) + 1} attempts: {err})")
+    return ""
 
 
 def _wait_ready(container_id: str, max_wait: int = 300) -> None:
