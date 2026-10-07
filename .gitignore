@@ -24,3 +24,4 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+data/marketing_quickref.md
