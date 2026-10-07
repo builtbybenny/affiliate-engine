@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import re
 import sys
 from datetime import date as _date
 from pathlib import Path
@@ -23,6 +24,11 @@ from core.boot import setup_console; setup_console()
 
 from core import config, planner
 from publishers import facebook, hosting, instagram
+
+# Research provenance is grounding for the writer, never copy for the
+# viewer — strip it defensively at publish time (generation strips too,
+# but renders made before 2026-10-07 still carry notes).
+_SOURCE_NOTE = re.compile(r"\s*\((?:source|src):\s*[^)]*\)", re.IGNORECASE)
 
 
 def load_plan(for_date: _date, fmt: str) -> dict:
@@ -122,6 +128,8 @@ def publish(fmt: str, for_date: _date, dry_run: bool, targets: set[str]) -> None
             else product["name"]
         )
         urls = [hosting.media_url(render)]
+
+    caption = _SOURCE_NOTE.sub("", caption).strip()
 
     print(f"[{fmt}] concept={concept_label} product={product['name']}")
     for u in urls:

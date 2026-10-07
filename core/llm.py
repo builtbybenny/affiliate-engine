@@ -203,6 +203,10 @@ def _fit_caption(caption: str) -> str:
     hashtag block (~90 chars), and guarantee the canonical disclosure line.
     Cuts at a line boundary — never mid-sentence."""
     text = _reflow((caption or "").strip())
+    # Research provenance is grounding for the writer, not copy for the
+    # viewer — it leaked into live captions (2026-10-06/07 reels) and the
+    # caption .txt files are public on Pages. Strip it here, at generation.
+    text = re.sub(r"\s*\((?:source|src):\s*[^)]*\)", "", text, flags=re.IGNORECASE)
     text = text.replace("link below", "link in bio")  # reels link lives in bio
     lines = [l for l in text.split("\n")
              if not l.strip().startswith("Affiliate link")]
