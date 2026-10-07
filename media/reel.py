@@ -125,11 +125,11 @@ def _draw_caption(
 
 
 def _draw_chrome(
-    frame: Image.Image, hook: str, progress: float,
+    frame: Image.Image, hook: str,
     palette: tuple, product_name: str = "", show_hook: bool = True,
     show_cta: bool = False,
 ) -> None:
-    """Persistent overlay: hook + product chip + progress (+ CTA, late only).
+    """Persistent overlay: hook + product chip (+ CTA, late only).
 
     2026-10-05 chrome cleanup (user-ratified "cleaner is better"):
       - brand chip REMOVED: IG's player already shows @stackandsavehq on
@@ -139,6 +139,10 @@ def _draw_chrome(
         caption CTA and the bio link carry the ask.
       - product chip shows during benefits only (intro hero and outro card
         both name the tool much bigger).
+    2026-10-07 (user: "remove the timescroll on the bottom of every video"):
+      - progress bar REMOVED: the in-frame timescroll duplicated a position
+        signal IG's own player already draws at the video's bottom edge —
+        two stacked scrubbers read as clutter.
     """
     draw = ImageDraw.Draw(frame, "RGBA")
     accent = common.hex_to_rgb(palette[2])
@@ -160,14 +164,9 @@ def _draw_chrome(
             color=(255, 255, 255, 255), bold=True,
         )
 
-    # Progress bar bottom
-    bar_y = H - 120
-    draw.rounded_rectangle((60, bar_y, W - 60, bar_y + 12), radius=6, fill=(255, 255, 255, 70))
-    draw.rounded_rectangle((60, bar_y, 60 + int((W - 120) * min(1.0, progress)), bar_y + 12), radius=6, fill=common.with_alpha(accent, 255))
-
     # CTA pill
     if show_cta:
-        common.rounded_pill(frame, (W // 2 - 320, bar_y - 210, W // 2 + 320, bar_y - 100),
+        common.rounded_pill(frame, (W // 2 - 320, H - 330, W // 2 + 320, H - 220),
                             fill=common.with_alpha(accent, 235), text="FREE TRIAL IN BIO",
                             text_color=(15, 23, 42, 255))
 
@@ -345,11 +344,10 @@ def build_reel(
                 frame = _base_frame(bg, t / duration)
             # _scrim returns a fresh image, so the cached vivid frame is safe
             frame = _scrim(frame)
-            progress = t / duration
             if t < intro:
                 # Hook owns the intro (hero text); no chips, no CTA —
                 # the frame is the promise and nothing else.
-                _draw_chrome(frame, hook, progress, palette,
+                _draw_chrome(frame, hook, palette,
                              show_hook=False)
                 _draw_intro(frame, product, palette, t, hook=hook)
             elif t < intro + mid:
@@ -357,14 +355,14 @@ def build_reel(
                 local_t = t - intro - idx * slice_t
                 # CTA pill is late-only: it appears with the final
                 # benefit line and walks straight into the outro card.
-                _draw_chrome(frame, hook, progress, palette,
+                _draw_chrome(frame, hook, palette,
                              product_name=name,
                              show_cta=(idx == n_lines - 1))
                 _draw_caption(frame, lines[idx], local_t, slice_t, palette,
                               index=idx + 1, total=n_lines)
             else:
                 _draw_outro(frame, product, palette)
-                _draw_chrome(frame, hook, progress, palette,
+                _draw_chrome(frame, hook, palette,
                              show_hook=False)
             _fade_to_black(frame, t, duration)
             frame.convert("RGB").save(frames_dir / f"f_{i:05d}.jpg", "JPEG", quality=88)
