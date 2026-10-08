@@ -7,14 +7,15 @@
     "hidden_feature::framer",
     "mistake_angle::gohighlevel",
     "back_by_demand::systeme",
-    "back_by_demand::beehiiv"
+    "back_by_demand::beehiiv",
+    "back_by_demand::pictory"
   ],
   "product_last": {
     "systeme": "2026-10-07",
     "beehiiv": "2026-10-08",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
-    "pictory": "2026-10-04",
+    "pictory": "2026-10-09",
     "framer": "2026-10-05",
     "gohighlevel": "2026-10-06"
   }
