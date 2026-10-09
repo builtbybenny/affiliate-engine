@@ -8,7 +8,8 @@
     "mistake_angle::gohighlevel",
     "back_by_demand::systeme",
     "back_by_demand::beehiiv",
-    "back_by_demand::pictory"
+    "back_by_demand::pictory",
+    "back_by_demand::framer"
   ],
   "product_last": {
     "systeme": "2026-10-07",
@@ -16,7 +17,7 @@
     "notion": "2026-10-02",
     "canva": "2026-10-03",
     "pictory": "2026-10-09",
-    "framer": "2026-10-05",
+    "framer": "2026-10-10",
     "gohighlevel": "2026-10-06"
   }
 }
