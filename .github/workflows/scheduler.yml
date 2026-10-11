@@ -212,11 +212,17 @@ jobs:
         if: steps.slot.outputs.run == 'true'
         run: python scripts/publish.py --today --format ${{ steps.slot.outputs.format }}
 
-      - name: Commit publish log + rotation memory (so later triggers see today's post,
-        # and LRU product rotation learns from CI posts, not just local ones)
+      - name: Build today's X queue entry + mirror to docs/x
+        if: steps.slot.outputs.run == 'true'
+        run: python scripts/make_x_queue.py
+
+      - name: Commit publish log + rotation memory + X queue (so later triggers see
+        # today's post, LRU product rotation learns from CI posts, and the X
+        # posting queue grows one entry per publish instead of falling behind)
         if: steps.slot.outputs.run == 'true'
         run: |
           git add data/published_log.csv data/concept_history.json data/research_briefs.json
-          git commit -m "log: published $(date -u +%FT%HZ) + rotation state" || echo "no changes"
+          git add -f docs/x
+          git commit -m "log: published $(date -u +%FT%HZ) + rotation state + X queue" || echo "no changes"
           git pull --rebase origin main || true
           git push
