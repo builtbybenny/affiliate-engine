@@ -113,13 +113,9 @@ def _draw_caption(
     frame.alpha_composite(band)
     draw = ImageDraw.Draw(frame, "RGBA")
 
-    # Index badge: '02 / 04' in accent — signals there's more coming.
-    if total > 1:
-        fb = common.font(40, bold=True)
-        label = f"{index:02d} / {total:02d}"
-        bw = fb.getlength(label)
-        draw.text(((W - bw) / 2, y - 158), label, font=fb,
-                  fill=common.with_alpha(accent, alpha))
+    # Index badge removed (user request 2026-10-12): the '02 / 04' counter
+    # above each benefit line read as carousel-UI, not reel content. The
+    # hook -> benefit -> CTA arc still paces the video without it.
 
     draw.text((x, y), text, font=f, fill=(255, 255, 255, alpha))
 
