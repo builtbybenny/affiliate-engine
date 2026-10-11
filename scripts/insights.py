@@ -76,6 +76,13 @@ def fetch_retention(media: list[dict]) -> list[dict]:
                 "date": m.get("timestamp", "")[:10],
                 "views": views,
                 "avg_watch_s": round(total_ms / 1000 / views, 1),
+                # engagement rides along from the media rows (no extra API
+                # call) so a dead reel (tiny watch time, zero love) is
+                # diagnosable from one line instead of two tables.
+                "likes": int(m.get("like_count") or 0),
+                "comments": int(m.get("comments_count") or 0),
+                "hook": (m.get("caption") or "").strip()
+                        .splitlines()[0][:52],
             })
     return out
 
@@ -111,8 +118,16 @@ def main() -> None:
             ret = fetch_retention(rows)
             if ret:
                 print("\nRetention (reels, avg watch time per view):")
-                for r in ret:
-                    print(f"  {r['date']}  views {r['views']:<4} avg {r['avg_watch_s']}s")
+                for r in sorted(ret, key=lambda x: x["avg_watch_s"]):
+                    flag = "  <- DEAD HOOK" if r["avg_watch_s"] < 3 else ""
+                    print(f"  {r['date']}  views {r['views']:<4} "
+                          f"avg {r['avg_watch_s']:>5}s  "
+                          f"♥{r['likes']} 💬{r['comments']}  {r['hook']}{flag}")
+                dead = sum(1 for r in ret if r["avg_watch_s"] < 3)
+                if dead:
+                    print(f"\n  {dead}/{len(ret)} reels die under 3s — "
+                          "the hook line/first frame is the lever (see "
+                          "docs_content/RETENTION_PLAYBOOK.md).")
             else:
                 print("\n(no reel retention data — needs instagram_manage_insights scope)")
         else:

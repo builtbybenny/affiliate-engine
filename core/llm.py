@@ -217,16 +217,40 @@ def _reflow(text: str) -> str:
     return text
 
 
-def _fit_caption(caption: str) -> str:
+def _fit_caption(caption: str, primary_phrase: str = "") -> str:
     """Keep the caption inside IG's 2,200-char cap with room for the folded
     hashtag block (~90 chars), and guarantee the canonical disclosure line.
-    Cuts at a line boundary — never mid-sentence."""
+    Cuts at a line boundary — never mid-sentence.
+
+    primary_phrase: the SEO keyword the spec told the model to use at most
+    twice (line 1 + one body line). Lines 3+ stuffing it get rewritten to
+    drop the phrase — the prompt rule alone failed (2026-10-11 gohighlevel
+    reel said 'all in one crm for agencies' three times in five lines).
+    """
     text = _reflow((caption or "").strip())
     # Research provenance is grounding for the writer, not copy for the
     # viewer — it leaked into live captions (2026-10-06/07 reels) and the
     # caption .txt files are public on Pages. Strip it here, at generation.
     text = re.sub(r"\s*\((?:source|src):\s*[^)]*\)", "", text, flags=re.IGNORECASE)
     text = text.replace("link below", "link in bio")  # reels link lives in bio
+    # Keyword discipline (see docstring): keep the phrase in its first TWO
+    # lines, strip it from later lines. Case-insensitive whole-phrase match.
+    phrase = (primary_phrase or "").strip().lower()
+    if phrase and len(phrase) > 8:  # trivially short phrases aren't SEO keys
+        pattern = re.compile(re.escape(phrase), re.IGNORECASE)
+        uses = 0
+        fixed: list[str] = []
+        for line in text.split("\n"):
+            if uses >= 2:
+                line = pattern.sub("", line)
+                line = re.sub(r"\s{2,}", " ", line).strip()
+                # tidy punctuation left dangling by the removal
+                line = re.sub(r"^[，,;:.\s]+", "", line)
+                line = re.sub(r"\s+([.,;!?])", r"\1", line)
+            if pattern.search(line):
+                uses += 1
+            fixed.append(line)
+        text = "\n".join(fixed)
     lines = [l for l in text.split("\n")
              if not l.strip().startswith("Affiliate link")]
     body: list[str] = []
@@ -310,8 +334,12 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         "only the Free trial / Price values given above.\n"
         "- The caption MUST use literal line breaks: 5-7 separate lines, one "
         "thought per line, each • bullet on its own line — never one paragraph.\n"
-        "- Body: 3-5 short lines. Repeat the primary keyword phrase naturally "
-        "2 more times and one secondary phrase. Cite 2 researched facts with "
+        "- Body: 3-5 short lines. Include the primary keyword phrase exactly "
+        "ONCE more in the body (light repetition only — the play-it-3-times "
+        "advice from 2026-10-05 produced visible stuffing that reads as spam "
+        "to humans and ranking models alike). All other lines use different "
+        "researched phrases or plain benefit language. Cite 2 researched "
+        "facts with "
         "their short source note. Benefits as • lines with real numbers.\n"
         "- Any CTA says 'link in bio' (never 'link below').\n"
         "- Keep each cited fact's (source: ...) note exactly as given.\n"
@@ -325,6 +353,9 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         "  Start free with the link in bio — no card needed.\n"
         "  (that shape runs 170-240 words when the lines carry real detail)\n"
         "- Answer ONE buyer objection from the researched list in plain words.\n"
+        "- KEYWORD DISCIPLINE: the primary search phrase may appear at most "
+        "TWICE in the whole caption (once in line 1, once in the body). A "
+        "third appearance is over-optimization — rewrite the line instead.\n"
         "- Exactly ONE specific engagement question after line 1 (references this "
         "content, e.g. which benefit they'd use first) — comments are a ranking "
         "signal.\n"
@@ -338,7 +369,8 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         options = data.get("hook_options") or []
         hook = pick_retention_hook(options, str(data.get("hook", "")))
         slides = [str(s).strip() for s in data.get("slides", []) if str(s).strip()]
-        caption = _fit_caption(str(data.get("caption", "")))
+        caption = _fit_caption(str(data.get("caption", "")),
+                               primary_phrase=(brief.get("keywords") or [""])[0])
         if not (hook and slides and caption):
             return None
         return {"hook": hook, "slides": slides[:5], "caption": caption}

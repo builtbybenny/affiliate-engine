@@ -67,22 +67,24 @@ WEEKLY_CALENDAR = {
 # (12:30 UTC carousel, 23:30 UTC reel) for US-Eastern prime time.
 POST_TIMES = {"carousel": "18:00", "reel": "05:00"}
 
-# Slide palettes: (bg_top, bg_bottom, accent, text) — tech/dark UI feel
+# Slide palettes: (bg_top, bg_bottom, accent, text) — tech/dark UI feel.
+# Merged 2026-10-11: there used to be TWO 6-palette lists back to back and
+# the second silently shadowed the first — half the rotation never rendered.
+# Kept both: the live set first (visual continuity with recent posts), the
+# retired set merged in for real day-to-day variety (12-palette cycle).
 PALETTES = [
     ("#0f172a", "#1e293b", "#38bdf8", "#f8fafc"),  # slate + sky (default)
+    ("#1a1a2e", "#16213e", "#e94560", "#f1f1f1"),  # midnight + crimson
+    ("#0b3d2e", "#14532d", "#facc15", "#f0fdf4"),  # forest + yellow
+    ("#2d1b4e", "#44318d", "#f7b731", "#f5f6fa"),  # violet + amber
+    ("#3d1e1e", "#7b2d26", "#ffd166", "#fdf6ec"),  # bordeaux + gold
+    ("#10233f", "#205295", "#ff6b6b", "#eaf6ff"),  # ocean + coral
     ("#0b1020", "#101935", "#8b5cf6", "#eef2ff"),  # midnight + violet
     ("#052e2b", "#0f3d3a", "#2dd4bf", "#ecfeff"),  # deep teal
     ("#1c1917", "#292524", "#f59e0b", "#fffbeb"),  # charcoal + amber
     ("#111827", "#1f2937", "#f472b6", "#fdf2f8"),  # graphite + pink
     ("#0c1428", "#16233f", "#22d3ee", "#ecfeff"),  # navy + cyan
-]
-PALETTES = [
-    ("#0f172a", "#1e293b", "#38bdf8", "#f8fafc"),
-    ("#1a1a2e", "#16213e", "#e94560", "#f1f1f1"),
-    ("#0b3d2e", "#14532d", "#facc15", "#f0fdf4"),
-    ("#2d1b4e", "#44318d", "#f7b731", "#f5f6fa"),
-    ("#3d1e1e", "#7b2d26", "#ffd166", "#fdf6ec"),
-    ("#10233f", "#205295", "#ff6b6b", "#eaf6ff"),
+    ("#12102a", "#1b1740", "#a78bfa", "#f3f1ff"),  # dusk + lavender
 ]
 
 
