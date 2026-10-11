@@ -211,10 +211,21 @@ def rebuild_index() -> None:
         blocks.append("\n".join(parts))
     index = INDEX_HEADER + "\n\n".join(blocks)
     (X_DIR / "INDEX.md").write_text(index, encoding="utf-8")
-    # mirror to docs/ (Pages serves it; same rsync rule as public/media)
-    if X_DOCS_DIR.exists() is False:
-        X_DOCS_DIR.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(X_DIR / "INDEX.md", X_DOCS_DIR / "INDEX.md")
+    # Mirror the FULL queue (INDEX + every .txt + media) to docs/x so GitHub
+    # Pages serves each caption file and its mp4/slides — INDEX alone isn't
+    # enough for phone posting. Same rsync idea as public/media -> docs/media.
+    # --delete keeps docs/x from accumulating files the local queue dropped.
+    X_DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    for src in X_DIR.rglob("*"):
+        dest = X_DOCS_DIR / src.relative_to(X_DIR)
+        if src.is_dir():
+            dest.mkdir(parents=True, exist_ok=True)
+            continue
+        shutil.copy2(src, dest)
+    for stale in X_DOCS_DIR.rglob("*"):
+        if not (X_DIR / stale.relative_to(X_DOCS_DIR)).exists():
+            stale.unlink() if stale.is_file() else None
+    (X_DOCS_DIR / "INDEX.md").write_text(index, encoding="utf-8")
 
 
 def main() -> None:
