@@ -1,15 +1,19 @@
 name: scheduler
 on:
   schedule:
-    # RAMP MODE (decided 2026-10-02): 1 post/day while the account is <2 weeks
-    # old — re-check ~2026-10-15, then re-add the 12:30 UTC carousel slot for 2/day.
-    # Evening US-prime window only, at deliberately odd minutes: posting at
-    # 23:30 sharp every day is a bot tell. Four triggers + a guard + a random
-    # draw = exactly one post per day, at a different time each day.
+    # Ramp ended 2026-10-12 (health gate cleared): back to 2/day — morning
+    # carousel + evening reel. Deliberately odd minutes: rounded times are a
+    # bot tell. Each window has triggers + a guard + a random draw so each
+    # format posts exactly once/day at a different time every day.
+    # Carousel (morning ET):
+    - cron: "11 12 * * *"  # ~08:11 ET
+    - cron: "29 12 * * *"  # ~08:29 ET
+    - cron: "47 12 * * *"  # ~08:47 ET forced fallback
+    # Reel (evening US-prime):
     - cron: "9 23 * * *"   # ~19:09 ET
     - cron: "27 23 * * *"  # ~19:27 ET
     - cron: "46 23 * * *"  # ~19:46 ET
-    - cron: "57 23 * * *"  # ~19:57 ET — forced fallback if earlier draws passed
+    - cron: "57 23 * * *"  # ~19:57 ET forced fallback
   workflow_dispatch: {}
 
 permissions:
@@ -50,33 +54,48 @@ jobs:
           REPO=${GITHUB_REPOSITORY#*/}
           echo "PUBLIC_MEDIA_BASE_URL=https://${OWNER}.github.io/${REPO}" >> "$GITHUB_ENV"
 
-      - name: Decide today's slot (ramp guard + randomized draw)
+      - name: Decide today's slot (per-format guard + randomized draw)
         id: slot
         run: |
           python - <<'PY'
           import csv, datetime, os, random
           utc = datetime.datetime.utcnow()
           manual = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
-          fmt = "carousel" if utc.hour == 12 else "reel"
-          # publish.py logs dates under config.now_local() = IST (UTC+05:30)
-          today = (utc + datetime.timedelta(hours=5, minutes=30)).date().isoformat()
-          posted = set()
+          ist_now = utc + datetime.timedelta(hours=5, minutes=30)
+          fmt = "carousel" if 11 <= utc.hour < 18 else "reel"
+          # Per-format guard (ramp-end fix, 2026-10-02 ratification): the old
+          # date-only guard saw the evening reel's log row (which lands under
+          # the NEXT IST date, since 23:xx UTC = next-day IST) and skipped the
+          # morning carousel thinking "already posted". The guard must ask has
+          # THIS FORMAT been posted for the IST date the row would carry.
+          row_date = ist_now.date().isoformat()
+          done = set()
           try:
               with open("data/published_log.csv", newline="", encoding="utf-8") as f:
-                  posted = {r[0] for r in list(csv.reader(f))[1:] if r}
+                  done = {(r[0], r[1]) for r in list(csv.reader(f))[1:] if len(r) >= 2}
           except FileNotFoundError:
               pass
           if manual:
               run, why = True, "manual dispatch"
-          elif today in posted:
-              run, why = False, f"ramp guard: already posted {today}"
-          elif (utc.hour, utc.minute) >= (23, 55):
-              run, why = True, "last trigger of the window — forced"
+          elif (row_date, fmt) in done:
+              run, why = False, f"guard: {fmt} already posted for {row_date}"
+          elif fmt == "carousel":
+              # Morning window: 12:11 draw, 12:29 higher, 12:47 forced.
+              if (utc.hour, utc.minute) >= (12, 47):
+                  run, why = True, "last carousel trigger — forced"
+              else:
+                  p = 0.35 if (utc.hour, utc.minute) < (12, 29) else 0.6
+                  run = random.random() < p
+                  why = f"carousel draw p={p} -> {'post' if run else 'pass'}"
           else:
-              t = (utc.hour, utc.minute)
-              p = 0.35 if t < (23, 20) else 0.55 if t < (23, 40) else 0.7
-              run = random.random() < p
-              why = f"draw p={p} -> {'post' if run else 'pass'}"
+              # Reel window: 23:09 draw, 23:27 higher, 23:46 gate, 23:57 forced.
+              if (utc.hour, utc.minute) >= (23, 55):
+                  run, why = True, "last trigger of the window — forced"
+              else:
+                  t = (utc.hour, utc.minute)
+                  p = 0.35 if t < (23, 20) else 0.55 if t < (23, 40) else 0.7
+                  run = random.random() < p
+                  why = f"reel draw p={p} -> {'post' if run else 'pass'}"
           with open(os.environ["GITHUB_OUTPUT"], "a") as out:
               out.write(f"format={fmt}\nrun={str(run).lower()}\n")
           print(f"{fmt} @ {utc:%H:%M}Z: {why}")
@@ -148,7 +167,7 @@ jobs:
 
       # Reels are rendered with ffmpeg; runner images do NOT ship it
       # (first-ever run failed 2026-10-01 on exactly this).
-      - name: Install ffmpeg (reels)
+      - name: Install ffmpeg (video)
         if: steps.slot.outputs.run == 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
@@ -177,7 +196,7 @@ jobs:
           # X posting queue (make_x_queue.py mirrors public/x into docs/x;
           # without this line the INDEX stays local until the next manual push)
           if [ -d docs/x ]; then git add -f docs/x; fi
-          git commit -m "media: ${{ steps.slot.outputs.format }} $(date -u +%F)" || echo "nothing to commit"
+          git commit -m "media: ${{ steps.slot.outputs.format }} $(date -u +%FT%HZ)" || echo "nothing to commit"
           git push
 
       - name: Wait until Pages serves the new files
