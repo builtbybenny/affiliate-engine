@@ -10,6 +10,18 @@ URLs don't apply to text-only mentions, and it reads cleaner).
 
 ---
 
+## 2026-10-12
+
+### systeme (reel) — [ ] paste + attach + post
+
+```
+Most entrepreneurs waste $1,800 a year on separate tools that refuse to talk to each other.
+Finding the best email newsletter tools shouldn't require taking out a small business loan just to launch a simp…
+🎬 60-second breakdown on the site — free trial: builtbybenny.github.io/affiliate-engine
+```
+^media: 2026-10-12_reel_systeme.mp4^
+
+
 ## 2026-10-11
 
 ### gohighlevel (reel) — [ ] paste + attach + post
