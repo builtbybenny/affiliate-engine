@@ -18,6 +18,10 @@ TEMPLATE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Dub partner-profile domain verification (partners.dub.co). The github.io
+     DNS is GitHub's, so the TXT-record route is impossible — Dub accepts the
+     same token as a meta tag. Tokenized below; regenerate only if revoked. -->
+<meta name="dub-domain-verification" content="{dub_token}">
 <title>{brand} — links</title>
 <style>
   :root {{ color-scheme: dark; }}
@@ -69,6 +73,7 @@ def main() -> None:
         )
     page = TEMPLATE.format(
         brand=html.escape(config.BRAND_NAME),
+        dub_token="6091882d-7007-4988-b901-75498d9c9c53",
         tagline=html.escape("The exact stack I use — start every tool free"),
         cards="\n  ".join(cards),
         accent="#38bdf8",
