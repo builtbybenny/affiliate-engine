@@ -61,11 +61,21 @@ def apply_punch_gate(ai_copy: dict | None, template_hook: str, concept: dict,
     still opens with a question by swapping line 1 for the gated hook.
     """
     final_hook = (ai_copy or {}).get("hook") or template_hook
-    if not copywriter.punchy(final_hook):
-        final_hook = (
-            template_hook if copywriter.punchy(template_hook)
-            else copywriter.hook_from_concept(concept, product, rng)
-        )
+    ok = copywriter.punchy(final_hook) and copywriter.hook_coherent(
+        final_hook, product, from_ai=bool(ai_copy)
+    )
+    if not ok:
+        # Fall back through: template hook (curated, coherent by design),
+        # then the concept bank. The 2026-10-12 bug this closes: Gemini
+        # wrote 'Mailchimp bills just doubled your creator revenue' for a
+        # beehiiv slide — stylish, punch-safe, and about the WRONG TOOL.
+        alt_hook = template_hook
+        if not (
+            copywriter.punchy(alt_hook)
+            and copywriter.hook_coherent(alt_hook, product, from_ai=False)
+        ):
+            alt_hook = copywriter.hook_from_concept(concept, product, rng)
+        final_hook = alt_hook
         if ai_copy:
             ai_copy["hook"] = final_hook
     if ai_copy:

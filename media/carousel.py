@@ -194,6 +194,13 @@ def build_carousel(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     bg = _product_image(product)
+    if bg is not None and bg.size[0] / bg.size[1] > 1.3:
+        # data/product_images are mostly LANDSCAPE marketing banners (1.9-2.25
+        # aspect vs 0.8 target) with the product's own headline baked in
+        # ('THE ONE PLACE TO BUILD…'). Cover-cropping to portrait both
+        # stretches the lettering and lets the baked headline duel ours
+        # (2026-10-12 beehiiv slide). Clean portraits skip this branch.
+        bg = bg.filter(ImageFilter.GaussianBlur(24))
     if bg is None:
         from media import stock  # optional: multi-provider stock when keys set
         bg = stock.product_background(product, portrait=True, salt=for_date.isoformat())

@@ -96,6 +96,28 @@ _BANNED_HOOK_WORDS = (
 )
 
 
+def hook_coherent(hook: str, product: dict, from_ai: bool = False) -> bool:
+    """The hook belongs to THIS product's post — 2026-10-12 gate.
+
+    Failure seen live: Gemini wrote 'Mailchimp bills just doubled your
+    creator revenue' as the hook of a *beehiiv* slide — grammatically
+    fine, punch gate passed, but it named the competitor as the subject
+    of a false claim. The punch gate measures style; this measures
+    subject. Rules:
+      • AI hooks never name the competitor (prompt even bans it; this
+        enforces it — belt and braces).
+      • Curated concept templates keep their versus formats
+        ("{name} vs {alt}") — they're designed and reviewed.
+    """
+    line = (hook or "").strip().lower()
+    if not line:
+        return False
+    alt = (product.get("alt") or "").strip().lower()
+    if alt and alt in line:
+        return not from_ai
+    return True
+
+
 def punchy(line: str) -> bool:
     """Quality gate for hook lines (2026-10-05 content review).
 
