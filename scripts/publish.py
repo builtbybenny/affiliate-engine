@@ -24,6 +24,7 @@ from core.boot import setup_console; setup_console()
 
 from core import config, planner
 from publishers import facebook, hosting, instagram
+from publishers import youtube as yt_publisher
 
 # Research provenance is grounding for the writer, never copy for the
 # viewer — strip it defensively at publish time (generation strips too,
@@ -46,13 +47,13 @@ def load_plan(for_date: _date, fmt: str) -> dict:
     return {"product_id": "", "concept": fmt, "is_rerun": False}
 
 
-def log_published(for_date: _date, fmt: str, product_id: str, ig_id: str, fb_id: str, urls: list[str]) -> None:
-    new = not config.PUBLISHED_LOG.exists()
+def log_published(for_date: _date, fmt: str, product_id: str, ig_id: str, fb_id: str, urls: list[str], yt_id: str = "") -> None:
+    new = not (config.PUBLISHED_LOG.exists() and "yt_video_id" in config.PUBLISHED_LOG.read_text(encoding="utf-8").splitlines()[0])
     with open(config.PUBLISHED_LOG, "a", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         if new:
-            w.writerow(["date", "format", "product_id", "ig_media_id", "fb_post_id", "media_urls"])
-        w.writerow([for_date.isoformat(), fmt, product_id, ig_id, fb_id, "|".join(urls)])
+            w.writerow(["date", "format", "product_id", "ig_media_id", "fb_post_id", "yt_video_id", "media_urls"])
+        w.writerow([for_date.isoformat(), fmt, product_id, ig_id, fb_id, yt_id, "|".join(urls)])
 
 
 def latest_render(fmt: str) -> Path | None:
@@ -177,7 +178,13 @@ def publish(fmt: str, for_date: _date, dry_run: bool, targets: set[str]) -> None
             fb_id = facebook.publish_photo(urls[0], caption_fb)
         print("  FB published:", fb_id)
 
-    log_published(for_date, fmt, pid, ig_id, fb_id, urls)
+    yt_id = ""
+    if "yt" in targets and fmt == "reel":
+        yt_title = product["name"] + " — " + caption.splitlines()[0][:60]
+        yt_id = yt_publisher.publish_short(str(render), f"{yt_title}\n\n{caption_fb}")
+        print("  YT published:", yt_id)
+
+    log_published(for_date, fmt, pid, ig_id, fb_id, urls, yt_id)
 
 
 def main() -> None:
@@ -188,13 +195,19 @@ def main() -> None:
     ap.add_argument("--format", choices=["carousel", "reel"], default="")
     ap.add_argument("--ig-only", action="store_true")
     ap.add_argument("--fb-only", action="store_true")
+    ap.add_argument("--yt-only", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
     for_date = (
         _date.fromisoformat(args.date) if args.date else config.now_local().date()
     )
-    targets = {"ig"} if args.ig_only else {"fb"} if args.fb_only else {"ig", "fb"}
+    targets = (
+        {"ig"} if args.ig_only
+        else {"fb"} if args.fb_only
+        else {"yt"} if args.yt_only
+        else {"ig", "fb"}
+    )
 
     if args.format:
         publish(args.format, for_date, args.dry_run, targets)

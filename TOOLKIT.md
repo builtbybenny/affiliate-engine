@@ -90,3 +90,35 @@ Add it as GitHub secret `PEXELS_API_KEY` during Stage 6 too.
 the engine will ever produce. 3 and 6 are already done — only their
 GitHub-secret steps remain, and doctor.py will remind you.
 4 → 5 come after go-live, tool by tool, at your Sunday ritual.
+
+## 8. YouTube Shorts automation (one-time, ~45 minutes) — code is wired
+
+`publishers/youtube.py` + `scripts/setup_youtube_tokens.py` are committed.
+The upload path only needs your OAuth consent once:
+
+1. **Channel** (done if you already have one) — the Shorts go to your
+   channel; no extra setting needed.
+2. **Google Cloud project**: console.cloud.google.com → New Project
+   (name it anything, e.g. `stack-and-save-pipeline`).
+3. **Enable the YouTube Data API v3** (APIs & Services → Library).
+4. **OAuth consent screen**: External, your email as the app owner, add
+   your own account as a Test user. Publishing status *Testing* is fine
+   for a personal-use app (uploads stay on your own channel).
+5. **Credentials → Create credentials → OAuth client ID → Desktop app**
+   → download the JSON to somewhere stable, e.g.
+   `C:\Users\Benny David\Documents\yt_client_secret.json`.
+6. In the repo `.env`, add:
+   `YOUTUBE_CLIENT_SECRETS=<that json path>`
+7. Run once, interactively: `python scripts/setup_youtube_tokens.py`
+   → a browser opens → pick your channel account → allow.
+   It saves the refresh token encrypted into `data/yt_token.enc`.
+
+After that, evening reels auto-upload as Shorts with
+`python scripts/publish.py --today --yt-only` (or add `yt` to the
+scheduler targets once the first manual upload is verified live).
+
+> Known gate (Google, not us): new API projects created after July 2020
+> publish uploads as **private** until the project passes YouTube's
+> compliance audit — sometimes instant for personal-use apps, sometimes
+> days. First upload may need a manual "make public" nudge in Studio;
+> that's the audit gate, not a bug.
