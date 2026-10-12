@@ -41,6 +41,11 @@ def _scrim(img: Image.Image, strength: int = 200) -> Image.Image:
     return Image.alpha_composite(img.convert("RGBA"), overlay)
 
 
+def _luma_mean(img: Image.Image) -> float:
+    px = list(img.convert("L").resize((12, 12)).getdata())
+    return sum(px) / 144.0
+
+
 def _soft_accent_blobs(base: Image.Image, accent: tuple[int, int, int, int]) -> None:
     w, h = base.size
     layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
@@ -68,7 +73,15 @@ def _hook_slide(product: dict, hook: str, palette: tuple, bg_img: Image.Image | 
         else common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
     )
     if bg_img:
-        base = _scrim(base, 110)
+        # Scrim must scale with the photo. A fixed alpha left bright stock
+        # photos (gray ~200 after `vivid`) washing the white hook out to
+        # near-zero contrast while dark ones stayed readable. Target a
+        # uniform mid-gray backdrop (~85) so headline contrast is constant
+        # regardless of which stock photo got picked.
+        luma = _luma_mean(base)
+        target = 85.0
+        alpha = 0 if luma <= target else int(255 * (1 - target / max(luma, 1)))
+        base = _scrim(base, min(200, max(40, alpha)))
     else:
         _soft_accent_blobs(base, accent)
     draw = ImageDraw.Draw(base, "RGBA")
