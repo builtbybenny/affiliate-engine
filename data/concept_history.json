@@ -11,11 +11,12 @@
     "back_by_demand::pictory",
     "back_by_demand::framer",
     "back_by_demand::gohighlevel",
-    "social_proof_drop::systeme"
+    "social_proof_drop::systeme",
+    "social_proof_drop::beehiiv"
   ],
   "product_last": {
     "systeme": "2026-10-12",
-    "beehiiv": "2026-10-08",
+    "beehiiv": "2026-10-12",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
     "pictory": "2026-10-09",

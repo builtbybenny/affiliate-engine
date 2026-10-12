@@ -12,6 +12,15 @@ URLs don't apply to text-only mentions, and it reads cleaner).
 
 ## 2026-10-12
 
+### beehiiv (carousel) — [ ] paste + attach + post
+
+```
+Finding the best email newsletter tools shouldn't mean draining your monthly revenue on sudden platform price hikes.
+When you need creator monetization software that scales past ten thousand subscribers wit…
+📊 4-slide breakdown on the site — free trial: builtbybenny.github.io/affiliate-engine
+```
+^media: 2026-10-12_carousel_beehiiv/ (slide_01.jpg …)^
+
 ### systeme (reel) — [ ] paste + attach + post
 
 ```
