@@ -16,7 +16,8 @@
     "social_proof_drop::framer",
     "social_proof_drop::gohighlevel",
     "back_by_demand::systeme",
-    "back_by_demand::beehiiv"
+    "back_by_demand::beehiiv",
+    "back_by_demand::gohighlevel"
   ],
   "product_last": {
     "systeme": "2026-10-14",
@@ -25,6 +26,6 @@
     "canva": "2026-10-03",
     "pictory": "2026-10-09",
     "framer": "2026-10-13",
-    "gohighlevel": "2026-10-13"
+    "gohighlevel": "2026-10-15"
   }
 }
