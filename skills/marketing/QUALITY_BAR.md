@@ -21,6 +21,24 @@
 - Hedged openers and vague numbers: "can help", "may improve", "up to",
   "industry-leading". Use the researched number or say nothing.
 
+## Carousel decks (carousel-frameworks.md — pick ONE, obey it end to end)
+- Exactly one architecture per deck: Value-Stack, Problem-Proof, Hack List,
+  Rant Callout, or Demo Walkthrough. A carousel is not a blog post chopped
+  into squares; each slide has two jobs — deliver one idea, and make the
+  next swipe irresistible.
+- Slide 1 is the thumbnail: it competes in the feed alone, so it must stop
+  a scroll by itself (specific count/deliverable for Value-Stack, a
+  result-with-number claim for Problem-Proof).
+- One idea per slide, and a slide line NEVER repeats within a deck —
+  shipping the same line twice (beehiiv 10-14, slides 1+2) is the clearest
+  possible "swipe to the same slide" kill signal.
+- Interior slides may name the tool once it is introduced; every line still
+  under 12 words.
+- No slide may exist to fill space: a deck is honest to its exact count
+  ("6 slides" = 6 slides of substance).
+- The close converts the swipe-through: free trial, link in bio — never a
+  raw URL.
+
 ## Composition rules
 - Clarity beats cleverness. A line that needs a re-read is a rewrite.
 - Specificity beats vagueness: "Cut weekly reporting from 4 hours to 15

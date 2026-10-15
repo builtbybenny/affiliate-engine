@@ -59,11 +59,33 @@ def publish_carousel(image_urls: list[str], caption: str) -> str:
             f"{config.IG_USER_ID}/media",
             {**base, "image_url": url, "is_carousel_item": "true"},
         )
+        # Meta error 9004 ("Only photo or video can be accepted as media
+        # type") fires on the parent creation while a child container is
+        # still processing. Every scheduled morning-slot carousel failure
+        # on 2026-10-12 (#45) and 2026-10-14 (#59) was this race; both
+        # recovered only via a later trigger. Poll each child to FINISHED
+        # (fast — seconds for images) and the parent reliably accepts.
+        _wait_ready(c["id"], max_wait=120)
         children.append(c["id"])
-    parent = _post(
-        f"{config.IG_USER_ID}/media",
-        {**base, "media_type": "CAROUSEL", "children": ",".join(children), "caption": caption},
-    )
+    parent: dict | None = None
+    last_err: IGError | None = None
+    for delay in (0, 20, 45):
+        if delay:
+            time.sleep(delay)
+        try:
+            parent = _post(
+                f"{config.IG_USER_ID}/media",
+                {**base, "media_type": "CAROUSEL", "children": ",".join(children), "caption": caption},
+            )
+            break
+        except IGError as e:
+            # Retry ONLY the known-transient case; anything else is fatal.
+            if "9004" in str(e) or "only photo or video" in str(e).lower():
+                last_err = e
+                continue
+            raise
+    if parent is None:
+        raise last_err or IGError("carousel parent creation failed")
     _wait_ready(parent["id"])
     pub = _post(f"{config.IG_USER_ID}/media_publish", {**base, "creation_id": parent["id"]})
     return pub["id"]

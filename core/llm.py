@@ -319,9 +319,22 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         "(reward: a number, immediate problem recognition, a concrete cost; "
         "punish: vagueness, tool-name openings, anything a competitor could say).\n"
         '- "hook": your single best pick from hook_options;\n'
-        "- Slides: first 1-2 slides deepen the human moment the hook opened; "
-        "middle slides reveal the tool as the fix with one concrete benefit each; "
-        "last slide = free-trial CTA.\n\n"
+        "- CAROUSEL ARCHITECTURE (vendored carousel-frameworks.md — this deck "
+        "is a swipe-through, not a blog post chopped into squares): pick ONE "
+        f"framework, name it in \"framework\" (one of: value_stack, "
+        "problem_proof, hack_list, rant_callout, demo) and obey it end to "
+        "end — 'value_stack': slide 1 states an exact count + exact "
+        "deliverable, then each interior slide pays down exactly one item; "
+        "'problem_proof': a numbered result claimed on slide 1, the real "
+        "problem stated, the mechanism, the how-to detail, then the proof; "
+        "'hack_list': a tight count of techniques, one technique per slide; "
+        "'rant_callout': one bold stance on a common practice argued through; "
+        "'demo': a step 1..N walkthrough ending in the outcome. Slide 1 must "
+        "ALSO stand alone as a feed thumbnail. Every slide delivers ONE idea "
+        "and makes the next swipe irresistible; interior slides may name the "
+        "tool; the final slide is the free-trial close.\n"
+        "- No filler slides: each slide line is unique within the deck — a "
+        "repeated line reads as the same slide twice and kills the swipe.\n\n"
         "SEO CAPTION SPEC (detailed — this caption is meant to rank in IG + "
         "Google search):\n"
         "- 170-240 words.\n"
@@ -369,18 +382,27 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         f"- One CTA line about the free trial{' (' + trial + ')' if trial else ''}.\n"
         "- Do NOT write the affiliate disclosure — it is appended automatically.\n\n"
         "Return STRICT JSON with keys: hook_options (4 objects), hook, slides "
-        "(3-5 strings, max 8 words each), caption. No other keys. JSON only."
+        "(3-6 strings, max 12 words each), framework (one of: value_stack, "
+        "problem_proof, hack_list, rant_callout, demo), caption. No other "
+        "keys. JSON only."
     )
     def _parse(raw: str) -> dict | None:
         data = json.loads(raw)
         options = data.get("hook_options") or []
         hook = pick_retention_hook(options, str(data.get("hook", "")))
         slides = [str(s).strip() for s in data.get("slides", []) if str(s).strip()]
+        # One idea per slide (carousel-frameworks.md): reject a deck that
+        # repeats a line — the retry below gets a sharper spec than a bad reel.
+        if len({s.lower() for s in slides}) < len(slides):
+            return None
+        framework = str(data.get("framework", "")).strip().lower()
+        if framework not in ("value_stack", "problem_proof", "hack_list", "rant_callout", "demo"):
+            framework = "value_stack"
         caption = _fit_caption(str(data.get("caption", "")),
                                primary_phrase=(brief.get("keywords") or [""])[0])
         if not (hook and slides and caption):
             return None
-        return {"hook": hook, "slides": slides[:5], "caption": caption}
+        return {"hook": hook, "slides": slides[:6], "framework": framework, "caption": caption}
 
     # Quality bar FIRST (fresh every call — the vendored file can change via
     # marketing_distill without touching this code).

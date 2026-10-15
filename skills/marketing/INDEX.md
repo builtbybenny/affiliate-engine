@@ -11,7 +11,7 @@ Source: https://github.com/coreyhaines31/marketingskills.git · enumerated at ve
 - **attribution** — When the user wants to figure out which marketing actually drives conversions and revenue, choose or interpret an attribution model, or reconcile conflicting numbers across tools
 - **churn-prevention** — When the user wants to reduce churn, build cancellation flows, set up save offers, recover failed payments, or implement retention strategies
 - **co-marketing** — When the user wants to find co-marketing partners, plan joint campaigns, or brainstorm partnership opportunities
-- **cold-email** — Write B2B cold emails and follow-up sequences that get replies
+- **cold-email** — Write and run B2B cold outbound that gets replies, from cold emails and follow-ups to sending setup, LinkedIn, multichannel cadences, and reply handling
 - **community-marketing** — Build and leverage online communities to drive product growth and brand loyalty
 - **competitor-profiling** — When the user wants to research, profile, or analyze competitors from their URLs
 - **competitors** — When the user wants to create competitor comparison or alternative pages for SEO and buyer-facing use
@@ -40,7 +40,7 @@ Source: https://github.com/coreyhaines31/marketingskills.git · enumerated at ve
 - **pricing** — When the user wants help with pricing decisions, packaging, or monetization strategy
 - **product-marketing** — When the user wants to create or update their product marketing context document
 - **programmatic-seo** — When the user wants to create SEO-driven pages at scale using templates and data
-- **prospecting** — When the user wants to find, qualify, and build a list of prospects to reach out to — across B2B SaaS, general B2B, or local small businesses
+- **prospecting** — When the user wants to find, qualify, and build a list of prospects to reach out to, across B2B SaaS, general B2B, or local small businesses
 - **public-relations** — When the user wants help with public relations, earned media, press coverage, journalist outreach, or media strategy (not pull requests)
 - **referrals** — When the user wants to create, optimize, or analyze a referral program, affiliate program, or word-of-mouth strategy
 - **revops** — When the user wants help with revenue operations, lead lifecycle management, or marketing-to-sales handoff processes

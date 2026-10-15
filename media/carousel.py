@@ -96,14 +96,64 @@ def _hook_slide(product: dict, hook: str, palette: tuple, bg_img: Image.Image | 
     return base
 
 
+def _soft_accent_blobs_variant(base: Image.Image, accent: tuple[int, int, int, int], index: int) -> None:
+    """Fallback-gradient interior slides: same accent language, but the two
+    soft blobs rotate through 3 anchor compositions per slide index so
+    adjacent slides never decode as near-identical fields."""
+    w, h = base.size
+    anchors = (
+        (((0.72, -0.05, 1.45, 0.30)), ((-0.30, 0.78, 0.38, 1.14))),
+        (((-0.22, -0.05, 0.62, 0.32)), ((0.58, 0.76, 1.36, 1.16))),
+        (((0.28, 0.58, 1.18, 1.06)), ((-0.32, -0.06, 0.54, 0.30))),
+    )
+    boxes = anchors[(index - 1) % len(anchors)]
+    alphas = (34, 26)
+    layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    for b, a in zip(boxes, alphas):
+        d.ellipse((b[0] * w, b[1] * h, b[2] * w, b[3] * h), fill=common.with_alpha(accent[:3], a))
+    layer = layer.filter(ImageFilter.GaussianBlur(60))
+    base.alpha_composite(layer)
+
+
 def _content_slide(
-    body: str, index: int, total: int, palette: tuple, kicker: str
+    body: str, index: int, total: int, palette: tuple, kicker: str,
+    bg_img: Image.Image | None = None,
 ) -> Image.Image:
+    """Interior slide. The FRAME (typography scale, ghost number, kicker,
+    progress dots) is identical on every inner slide on purpose — same
+    template per carousel-frameworks.md — while the background layer
+    differs per slide: a panning/zooming crop window over the deck photo
+    (or a rotating accent-blob composition on the gradient fallback),
+    with the hook slide's luma-targeted scrim so type contrast stays
+    constant. Shipped decks used to differ by only 3-9/255 grayscale in
+    the middle slides, which reads as the same slide twice and kills the
+    swipe-through (2026-10-15 rebuild)."""
     W, H = 1080, 1350
     top, bottom, accent_hex, text = palette
     accent = common.hex_to_rgb(accent_hex)
-    base = common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
-    _soft_accent_blobs(base, accent)
+    if bg_img is not None:
+        src = bg_img
+        n_interior = max(1, total - 2)
+        f = 0.5 if n_interior == 1 else (index - 1) / (n_interior - 1)
+        zoom = 1.16 + 0.18 * ((index % 3) / 2)  # subtle per-slide zoom variety
+        src_w, src_h = src.size
+        scale = max(W / src_w, H / src_h) * zoom  # cover-fit + zoom
+        rs = src.resize(
+            (max(1, int(src_w * scale + 0.5)), max(1, int(src_h * scale + 0.5))),
+            Image.LANCZOS,
+        )
+        slack_x, slack_y = rs.width - W, rs.height - H
+        left = int(slack_x * f)  # pan the window across the photo
+        top_s = int(slack_y * (0.0 if index % 2 else 0.5))  # vertical jitter
+        base = common.vivid(rs.crop((left, top_s, left + W, top_s + H))).convert("RGBA")
+        luma = _luma_mean(base)
+        target = 85.0
+        alpha = 0 if luma <= target else int(255 * (1 - target / max(luma, 1)))
+        base = _scrim(base, min(200, max(40, alpha)))
+    else:
+        base = common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
+        _soft_accent_blobs_variant(base, accent, index)
     draw = ImageDraw.Draw(base, "RGBA")
 
     ghost = common.font(300, bold=True)
@@ -186,6 +236,19 @@ def build_carousel(
         )
     if hook_override:
         slide_texts[0] = hook_override
+    # One idea per slide (vendored carousel-frameworks.md). A repeated line
+    # ships as "the same slide twice" — beehiiv 2026-10-14 actually published
+    # its hook line on BOTH slide 1 and slide 2. The renderer is the last
+    # line of defense: keep each line's first occurrence, drop dupes.
+    _seen: set[str] = set()
+    _deduped: list[str] = []
+    for _t in slide_texts:
+        _k = _t.strip().lower()
+        if not _k or _k in _seen:
+            continue
+        _seen.add(_k)
+        _deduped.append(_t)
+    slide_texts = _deduped
     hook = slide_texts[0]
     bodies = slide_texts[1:-1] or ["Check the details in the caption"]
     total = len(bodies) + 2  # hook + bodies + CTA
@@ -194,19 +257,27 @@ def build_carousel(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     bg = _product_image(product)
+    bg_hook = bg
+    bg_body = bg  # interior slides pan the CRISP image; see comment below
     if bg is not None and bg.size[0] / bg.size[1] > 1.3:
         # data/product_images are mostly LANDSCAPE marketing banners (1.9-2.25
         # aspect vs 0.8 target) with the product's own headline baked in
         # ('THE ONE PLACE TO BUILD…'). Cover-cropping to portrait both
         # stretches the lettering and lets the baked headline duel ours
-        # (2026-10-12 beehiiv slide). Clean portraits skip this branch.
-        bg = bg.filter(ImageFilter.GaussianBlur(24))
+        # (2026-10-12 beehiiv slide). Clean portraits skip this branch. Only
+        # the hook slide needs the full 24-blur — it owns the big title.
+        # Interiors pan the lightly-blurred source under the luma-targeted
+        # scrim: distinct windows per slide (2026-10-15) AND far more visible
+        # photo content per slide than a 24-blur wash carries.
+        bg_hook = bg.filter(ImageFilter.GaussianBlur(24))
+        bg_body = bg.filter(ImageFilter.GaussianBlur(6))
     if bg is None:
         from media import stock  # optional: multi-provider stock when keys set
         bg = stock.product_background(product, portrait=True, salt=for_date.isoformat())
-    slides: list[Image.Image] = [_hook_slide(product, hook, palette, bg)]
+        bg_hook = bg_body = bg
+    slides: list[Image.Image] = [_hook_slide(product, hook, palette, bg_hook)]
     for i, body in enumerate(bodies, start=1):
-        slides.append(_content_slide(body, i, total, palette, kicker=product["name"]))
+        slides.append(_content_slide(body, i, total, palette, kicker=product["name"], bg_img=bg_body))
     slides.append(_cta_slide(product, palette, total))
 
     files: list[Path] = []
@@ -216,4 +287,7 @@ def build_carousel(
         files.append(path)
 
     (out_dir / "slides.txt").write_text("\n".join(slide_texts), encoding="utf-8")
+    fw = (copy_override or {}).get("framework") if copy_override else ""
+    if fw:
+        (out_dir / "framework.txt").write_text(str(fw), encoding="utf-8")
     return files, slide_texts

@@ -121,6 +121,33 @@ try:
         "slides": len(files),
     })
 
+    # carousel anti-repetition gates (2026-10-15: shipped decks had near-
+    # identical middle slides AND one deck repeated a line on slides 1+2)
+    uniq_lines = {t.strip().lower() for t in texts if t.strip()}
+    out["checks"].append({
+        "name": "carousel_no_duplicate_slide_texts",
+        "ok": len(uniq_lines) == len(texts) and len(texts) >= 4,
+        "lines": len(texts),
+    })
+    try:
+        from PIL import Image as _VerifyImage
+
+        def _gray_sig(p: Path) -> list[int]:
+            return list(_VerifyImage.open(p).convert("L").resize((24, 30)).getdata())
+
+        sigs = [_gray_sig(f) for f in files]
+        worst = min(
+            sum(abs(a - b) for a, b in zip(x, y)) / len(x)
+            for i, x in enumerate(sigs) for y in sigs[i + 1:]
+        )
+        out["checks"].append({
+            "name": "carousel_slides_visibly_distinct",
+            "ok": worst > 25,
+            "worst_pair_gray_diff": round(worst, 1),
+        })
+    except Exception as e:
+        out["checks"].append({"name": "carousel_slides_visibly_distinct", "ok": False, "err": repr(e)[:200]})
+
     # reel factory renders end-to-end (short 4s clip: photo bg + chrome + ffmpeg)
     try:
         from media.reel import build_reel

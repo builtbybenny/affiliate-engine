@@ -4,7 +4,8 @@ Subset of https://github.com/coreyhaines31/marketingskills (MIT License,
 Copyright (c) 2025 Corey Haines — full text in the source repo LICENSE).
 
 - **Pinned at commit:** `f719a8079c694e3267d47b6b60a62aa926055f2c`
-- **Vendored:** 2026-10-07 by session 9d
+- **Vendored:** 2026-10-07 by session 9d; expanded 2026-10-15 (carousel
+  anti-repetition rebuild — see "2026-10-15 addition" below)
 - **Versions:** copywriting 2.1.0, social 2.3.2, offers 1.0.1, lead-magnets 2.0.0
 
 ## Why these four
@@ -17,14 +18,29 @@ full menu with trigger rules for staged pulls.
 
 ## What was dropped from the copied folders (and why)
 - `*/evals/` — vendor-internal eval fixtures, not guidance.
-- social: `listening*.md`, `x-algorithm.md`, `reverse-engineering.md`,
-  `carousel-frameworks.md` — X/listening-specific; IG carousel guidance
-  already lives in our `media/carousel.py` + `post-templates.md`.
+- social: `listening*.md`, `x-algorithm.md`, `reverse-engineering.md` —
+  X/listening-specific (channel not operated). `carousel-frameworks.md`,
+  `short-form-video.md` and `post-templates.md` were excluded here on
+  2026-10-07 with the stale rationale that carousel guidance already lived
+  in `media/carousel.py` — the shipped decks' near-identical middle slides
+  (pixel diff 3–9/255; beehiiv 10-14 repeated a line on slides 1+2) proved
+  the opposite: adoption risk, not dup of wireframe.
 - offers: bonus-stacking/guarantee/scarcity/value-equation/examples —
   we promote other people's SaaS offers; `saas-offers.md` + `offer-anatomy.md`
   carry the applicable framing (banned vocabulary included via SKILL.md).
 - lead-magnets: `benchmarks.md` — numeric benchmarks need a mail list we
   don't run yet.
+
+## 2026-10-15 addition
+Adopted into social/references from the SAME pinned commit f719a807
+(no refresh needed):
+- `carousel-frameworks.md` — the five swipe-through architectures every
+  deck must now pick one of (Value-Stack / Problem-Proof / Hack List /
+  Rant Callout / Demo Walkthrough); wired into the deck-generation prompt
+  and the carousel renderer.
+- `short-form-video.md` — 3-second visual+verbal+overlay hook rule; feeds
+  the QUALITY_BAR hook section.
+- `post-templates.md` — per-platform post shapes for the caption engine.
 
 ## Runtime contract
 - `skills/marketing/QUALITY_BAR.md` — compact prompt block, prepended to the
