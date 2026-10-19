@@ -24,7 +24,8 @@
     "back_by_demand::framer",
     "back_by_demand::gohighlevel",
     "back_by_demand::systeme",
-    "back_by_demand::beehiiv"
+    "back_by_demand::beehiiv",
+    "back_by_demand::gohighlevel"
   ],
   "product_last": {
     "systeme": "2026-10-18",
@@ -33,6 +34,6 @@
     "canva": "2026-10-03",
     "pictory": "2026-10-09",
     "framer": "2026-10-17",
-    "gohighlevel": "2026-10-17"
+    "gohighlevel": "2026-10-19"
   }
 }
