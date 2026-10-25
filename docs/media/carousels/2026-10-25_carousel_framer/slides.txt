@@ -1,0 +1,7 @@
+The most-requested tool this month: Framer
+{'text': 'Cut weekly web design down to a single afternoon.'}
+{'text': 'Traditional platforms lock your custom designs behind complex code.'}
+{'text': 'Build canvas layouts visually with zero layout restrictions.'}
+{'text': 'Publish directly to a custom domain with free hosting.'}
+{'text': 'Start your free site trial with the link in bio.'}
+Free trial: Free plan + site trial
