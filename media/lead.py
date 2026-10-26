@@ -75,10 +75,8 @@ def _item_slide(item: dict, index: int, total: int, palette: tuple) -> Image.Ima
     base = common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
     draw = ImageDraw.Draw(base, "RGBA")
 
-    ghost = common.font(300, bold=True, weight="black")
-    num = f"{index:02d}"
-    gw = ghost.getlength(num)
-    draw.text((W - gw - 60, -70), num, font=ghost, fill=common.with_alpha(accent, 48))
+    # Ghost index (01/02/...) removed with the carousel decks — the user
+    # does not want numbered slides on screen (2026-10-25).
 
     common.draw_fitted(
         draw, item["name"], (72, 420, W - 72, 700), max_size=96, min_size=60,

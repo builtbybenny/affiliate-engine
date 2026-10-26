@@ -90,6 +90,34 @@ def load_hashtags() -> list[str]:
     return DEFAULT_HASHTAGS
 
 
+# ── Featured-tag rotation (user decision 2026-10-25) ────────────────────────
+# Twice a week for one month a high-reach fyp-family tag is swapped INTO the
+# five-tag block, replacing the block's LEAST important tag (the last, random
+# pool tag) so the total stays at Instagram's hard cap of 5. Rest days keep
+# the ordinary 5 relevant tags, untouched.
+#
+# Tag pool taken from iqhashtags.com/hashtags/hashtag/fyppppppppppppppppppppppp
+# ("10+ Trending Tags for Instagram Reels", Oct 2026): the fyp family plus its
+# listed related tags. Generic non-fyp tags from that page (#viral, #trending,
+# #explore) are deliberately NOT used — they are off-niche for this account.
+FEATURED_TAGS = ["fyp", "fypシ", "fypage", "fypp", "fy", "foryou", "foryoupage"]
+FEATURED_WEEKDAYS = (2, 5)          # Tuesday + Friday = twice a week
+FEATURED_FROM = date(2026, 10, 26)  # start of the next full posting week
+FEATURED_UNTIL = date(2026, 11, 22) # one month of cadence, then re-ratify
+
+
+def featured_tag(for_date: date | None = None) -> str:
+    """'#fyp' family tag for today, or '' on rest days / outside the window."""
+    d = for_date or config.now_local().date()
+    if not FEATURED_FROM <= d <= FEATURED_UNTIL:
+        return ""
+    iso = d.isocalendar()
+    if iso.weekday not in FEATURED_WEEKDAYS:
+        return ""
+    # Rotate by week + weekday so consecutive featured posts differ.
+    return FEATURED_TAGS[(iso.week * 2 + iso.weekday) % len(FEATURED_TAGS)]
+
+
 _BANNED_HOOK_WORDS = (
     "supercharge", "unlock", "game-chang", "seamless", "next level",
     "take it to the next", "elevate", "revolutioni",
@@ -227,15 +255,16 @@ def build_caption(
     blocks.append(rng.choice(CTA_LINES))
     blocks.append(DISCLOSURE)
     if include_hashtags:
-        blocks.append(hashtag_block(product, rng))
+        blocks.append(hashtag_block(product, rng, for_date=for_date))
     caption = "\n\n".join(blocks)
     return caption[:2200]  # IG hard limit
 
 
-def build_first_comment(product: dict, rng: random.Random) -> str:
+def build_first_comment(product: dict, rng: random.Random,
+                         for_date: date | None = None) -> str:
     """Hashtag block goes in the auto-posted first comment (cleaner caption,
     same reach). Posted by the IG publisher right after publishing."""
-    return hashtag_block(product, rng)[:2200]
+    return hashtag_block(product, rng, for_date=for_date)[:2200]
 
 
 # Instagram hard-caps posts/reels at 5 hashtags (2026 policy change; was 30).
@@ -252,7 +281,8 @@ _PREFERRED_TAGS = [
 ]
 
 
-def hashtag_block(product: dict, rng: random.Random) -> str:
+def hashtag_block(product: dict, rng: random.Random,
+                   for_date: date | None = None) -> str:
     tags = load_hashtags()
     pool = list(dict.fromkeys(t if t.startswith("#") else f"#{t}" for t in tags))
     name_words = [w for w in planner.slugify(product["name"]).split("-") if len(w) > 3]
@@ -263,4 +293,17 @@ def hashtag_block(product: dict, rng: random.Random) -> str:
     rest = [t for t in pool if t not in out]
     if rest and len(out) < IG_HASHTAG_LIMIT:
         out += rng.sample(rest, min(IG_HASHTAG_LIMIT - len(out), len(rest)))
+    out = out[:IG_HASHTAG_LIMIT]
+
+    # Featured-day swap (2026-10-25): put the fyp-family tag in and drop the
+    # block's least important member — the last position, which is always a
+    # random pool tag, never the product tag or the chosen anchor. Total stays
+    # at the 5-tag cap; rest days are unchanged.
+    feat = featured_tag(for_date)
+    if feat:
+        tag = feat if feat.startswith("#") else f"#{feat}"
+        if tag not in out:
+            if len(out) >= IG_HASHTAG_LIMIT:
+                out = out[:-1]
+            out.append(tag)
     return " ".join(out[:IG_HASHTAG_LIMIT])

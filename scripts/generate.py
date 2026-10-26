@@ -80,7 +80,12 @@ def apply_punch_gate(ai_copy: dict | None, template_hook: str, concept: dict,
             ai_copy["hook"] = final_hook
     if ai_copy:
         cap_lines = ai_copy.get("caption", "").split("\n")
-        if cap_lines and cap_lines[0].strip().endswith("?"):
+        # Caption line 1 must BE the shipped hook (2026-10-25): the model
+        # writes line 1 around its own pick, then pick_retention_hook may
+        # choose a different option — the feed line and the on-screen hook
+        # then opened with different sentences. Repair deterministically;
+        # covers the old "line ends with ?" case too.
+        if cap_lines and cap_lines[0].strip() != final_hook.strip():
             cap_lines[0] = final_hook
             ai_copy["caption"] = "\n".join(cap_lines)
     return final_hook
@@ -151,15 +156,19 @@ def main() -> None:
             print("  slides :", " | ".join(copywriter.build_slide_texts(product, plan["concept"], rng, hook=hook)[:4]))
             continue
 
-        first_comment = copywriter.build_first_comment(product, rng)
+        first_comment = copywriter.build_first_comment(product, rng, for_date=for_date)
 
         ai_copy = llm.write_copy(
             product,
-            plan["concept"],
+            # Human-readable label, not the raw id: the model used to read
+            # 'Post theme: back_by_demand' and duly write demand copy.
+            concept["label"],
             fallback_hooks=concept["hooks"],
             fallback_slides=[],
             fallback_caption="",
             brief=brief,
+            # The ONE journey gap this post closes (drives hook + caption + CTA)
+            angle=concept.get("journey", ""),
         )
         if ai_copy:
             print("  copy: AI (Gemini)")

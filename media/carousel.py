@@ -16,7 +16,7 @@ import random
 from datetime import date
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
 from core import config, copywriter, planner
 from media import common
@@ -136,7 +136,18 @@ def _content_slide(
         src = bg_img
         n_interior = max(1, total - 2)
         f = 0.5 if n_interior == 1 else (index - 1) / (n_interior - 1)
-        zoom = 1.16 + 0.18 * ((index % 3) / 2)  # subtle per-slide zoom variety
+        # Slide-to-slide variety (rebuilt 2026-10-25). The previous window was
+        # a gentle monotonic pan over a light-blur(6) crop with a fixed luma
+        # target — with the big ghost index gone, the deck measured 10.5/25 on
+        # _verify's worst-pair gray gate, i.e. "the same slide twice". Now: a
+        # 5-step zoom cycle (1.12x-1.54x), scrambled crop offsets instead of a
+        # monotonic sweep, and a per-slide luma target so no two interior
+        # slides land on the same histogram.
+        _zoom = (1.12, 1.46, 1.24, 1.54, 1.34)
+        _fx = (0.0, 0.62, 0.21, 0.84, 0.43)
+        _fy = (0.0, 0.35, 1.0, 0.6, 0.2)
+        _k = (index - 1) % 5
+        zoom = _zoom[_k]
         src_w, src_h = src.size
         scale = max(W / src_w, H / src_h) * zoom  # cover-fit + zoom
         rs = src.resize(
@@ -144,22 +155,38 @@ def _content_slide(
             Image.LANCZOS,
         )
         slack_x, slack_y = rs.width - W, rs.height - H
-        left = int(slack_x * f)  # pan the window across the photo
-        top_s = int(slack_y * (0.0 if index % 2 else 0.5))  # vertical jitter
+        # Single-interior decks keep the centred window; multi-slide decks
+        # jump between fixed offsets so neighbouring slides never share a crop.
+        left = int(slack_x * (f if n_interior == 1 else _fx[_k]))
+        top_s = int(slack_y * (f if n_interior == 1 else _fy[_k]))
         base = common.vivid(rs.crop((left, top_s, left + W, top_s + H))).convert("RGBA")
+        # Per-slide tone target (rebuilt 2026-10-25). One fixed 85 target put
+        # every interior slide on the same histogram; combined with removing
+        # the big ghost index, _verify's worst-pair gray gate fell to 10.5/25
+        # — literally "the same slide twice". Each slide now aims at its own
+        # tone (55..115 mean gray, 15 apart), LIFTING a dark source instead of
+        # only darkening a bright one, so no two interior slides can land on
+        # the same exposure before crop/zoom differences are even counted.
+        # White type stays legible: it rides a dark band at the text row.
         luma = _luma_mean(base)
-        target = 85.0
-        alpha = 0 if luma <= target else int(255 * (1 - target / max(luma, 1)))
-        base = _scrim(base, min(200, max(40, alpha)))
+        # Spacing matters more than the absolute level: the gate is a MIN over
+        # every slide pair, so adjacent slides must sit ~15 gray apart before
+        # their (photo) content difference is even counted.
+        target = (58.0, 74.0, 90.0, 106.0, 122.0)[_k]
+        if luma > target + 2:
+            alpha = int(255 * (1 - target / max(luma, 1)))
+            base = _scrim(base, min(200, max(40, alpha)))
+        elif luma < target - 2:
+            gain = min(2.4, target / max(luma, 1))
+            base = ImageEnhance.Brightness(base.convert("RGB")).enhance(gain).convert("RGBA")
     else:
         base = common.vivid(common.vertical_gradient((W, H), top, bottom)).convert("RGBA")
         _soft_accent_blobs_variant(base, accent, index)
     draw = ImageDraw.Draw(base, "RGBA")
 
-    ghost = common.font(300, bold=True)
-    num = f"{index:02d}"
-    gw = ghost.getlength(num)
-    draw.text((W - gw - 60, -70), num, font=ghost, fill=common.with_alpha(accent, 48))
+    # The big ghost index (01/02/03) that used to sit top-right of every
+    # interior slide is GONE (user request 2026-10-25 — the deck read as a
+    # numbered slideshow). Dots below still show position without numbers.
 
     f = common.font(34, bold=True)
     draw.text((72, 100), kicker.upper(), font=f, fill=common.with_alpha(accent, 220))
@@ -207,6 +234,36 @@ def _cta_slide(product: dict, palette: tuple, slide_count: int) -> Image.Image:
     )
     common.progress_dots(draw, slide_count, slide_count - 1, W // 2, 1180, common.with_alpha(accent, 255), (255, 255, 255, 70))
     return base
+
+
+def _interior_backgrounds(product: dict, for_date: date,
+                           n: int, fallback: Image.Image | None) -> list[Image.Image | None]:
+    """One distinct background per interior slide (2026-10-25).
+
+    Panning a single (often very flat) marketing banner could not separate
+    interior slides enough: with the big ghost index removed, the deck measured
+    10.5-18.6 mean-gray difference on _verify's worst-pair gate of 25 — i.e.
+    two adjacent slides really did read as the same slide. Different
+    same-topic stock photos per slide fix it at the source, keep the product
+    shot on the hook slide (where it sells), and fall back to the panned banner
+    whenever stock is unreachable (keys off / offline) so rendering never dies.
+    """
+    try:
+        from media import stock
+    except Exception:
+        stock = None
+    out: list[Image.Image | None] = []
+    for i in range(1, n + 1):
+        img = None
+        if stock is not None:
+            try:
+                img = stock.product_background(
+                    product, portrait=True, salt=f"{for_date.isoformat()}|carousel{i}"
+                )
+            except Exception:
+                img = None
+        out.append(img if img is not None else fallback)
+    return out
 
 
 def build_carousel(
@@ -276,8 +333,10 @@ def build_carousel(
         bg = stock.product_background(product, portrait=True, salt=for_date.isoformat())
         bg_hook = bg_body = bg
     slides: list[Image.Image] = [_hook_slide(product, hook, palette, bg_hook)]
+    interior_bgs = _interior_backgrounds(product, for_date, len(bodies), bg_body)
     for i, body in enumerate(bodies, start=1):
-        slides.append(_content_slide(body, i, total, palette, kicker=product["name"], bg_img=bg_body))
+        slides.append(_content_slide(body, i, total, palette, kicker=product["name"],
+                                     bg_img=interior_bgs[i - 1] or bg_body))
     slides.append(_cta_slide(product, palette, total))
 
     files: list[Path] = []

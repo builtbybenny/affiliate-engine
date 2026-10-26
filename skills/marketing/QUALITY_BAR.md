@@ -39,6 +39,23 @@
 - The close converts the swipe-through: free trial, link in bio — never a
   raw URL.
 
+## Selling, not informing (our addition — 2026-10-25 content rebuild)
+- One journey gap per post: the gap they feel -> this tool closes it (one
+  checkable fact) -> their week after -> ONE ask. A post that teaches three
+  things and never asks for the click has failed.
+- Banned claims, no exceptions: "most requested", "you keep asking", "back
+  again / here it is again", "X people grabbed this", "hundreds/thousands of
+  users", "everyone is switching", "trending", and any invented popularity,
+  sales or usage number. We have no data for any of them.
+- No feature tours: never open or close with a list of what the tool does
+  ("it has funnels, email, courses..."). The reader buys the after-state.
+- The hook is line 1 and scene 1 — exactly once. It never returns as a later
+  caption line, a slide, or an on-screen reminder.
+- The caption ends on a decision: one free-trial line, "link in bio", no menu
+  of options, no "save this for later" as the closing move.
+- Never restate the product's benefit lines; translate each one into the
+  viewer's moment, phrased differently from the last post.
+
 ## Composition rules
 - Clarity beats cleverness. A line that needs a re-read is a rewrite.
 - Specificity beats vagueness: "Cut weekly reporting from 4 hours to 15

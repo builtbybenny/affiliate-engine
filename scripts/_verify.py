@@ -6,6 +6,7 @@ the JSON IS the ground truth, not the console.
 """
 import json
 import random
+import re
 import subprocess
 import sys
 import traceback
@@ -64,10 +65,41 @@ try:
         "ok": len({s["product"] for s in firstN}) == n_prod and not any(s["rerun"] for s in firstN),
         "order": [s["product"] for s in firstN],
     })
+    # 2026-10-25 content rebuild: the rerun mechanism (which forced "you keep
+    # asking about X — here it is again" / "the most-requested tool this
+    # month" onto ~every post of a small catalog) was DELETED. The old
+    # "repeats get honest rerun framing" gate is therefore replaced by two
+    # hard checks: those concepts and hooks are really gone, and a product
+    # never lands on the same angle twice in a row.
+    banned_terms = re.compile(
+        r"keep asking|most[- ]requested|here it is again|grabbed|200\+|"
+        r"hundreds (of )?(users|people)|everyone is switching",
+        re.I,
+    )
+    banned_concepts = [c for c in ("back_by_demand", "social_proof_drop")
+                       if c in concepts.CONCEPTS]
+    banned_hooks = [
+        f"{cid}: {h}" for cid, c in concepts.CONCEPTS.items()
+        for h in c.get("hooks", []) if banned_terms.search(h)
+    ]
     out["checks"].append({
-        "name": "repeats_get_honest_rerun_framing",
-        "ok": all(s["rerun"] for s in later),
+        "name": "no_fake_demand_concepts_or_hooks",
+        "ok": not banned_concepts and not banned_hooks,
+        "concepts": banned_concepts,
+        "hooks": banned_hooks,
         "later": later,
+    })
+    same_twice = [
+        {"day": later[i]["day"], "product": later[i]["product"],
+         "concept": later[i]["concept"]}
+        for i in range(1, len(later))
+        if later[i]["product"] == later[i - 1]["product"]
+        and later[i]["concept"] == later[i - 1]["concept"]
+    ]
+    out["checks"].append({
+        "name": "no_same_angle_twice_in_a_row",
+        "ok": not same_twice,
+        "clashes": same_twice,
     })
     pairs = [(s["concept"], s["product"]) for s in firstN]
     out["checks"].append({"name": "no_pairing_repeats_firstN", "ok": len(set(pairs)) == n_prod})
@@ -113,10 +145,10 @@ try:
     files, texts = car.build_carousel(
         prod, "stack_drop",
         out_dir=Path("_tmp_verify_car"), for_date=d0, seed=5,
-        hook_override=f"You keep asking about {prod['name']} - here it is again",
+        hook_override=f"One setting in {prod['name']} changes your whole week",
     )
     out["checks"].append({
-        "name": "carousel_renders_with_rerun_hook",
+        "name": "carousel_renders_with_concept_hook",
         "ok": len(files) >= 4 and files[0].exists(),
         "slides": len(files),
     })

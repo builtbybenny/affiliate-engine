@@ -107,29 +107,64 @@ CONCEPTS: dict[str, dict] = {
             "Myth: good tools cost a lot. Fact: {name} starts free.",
         ],
     },
-    # ── Repeat-exposure concepts (honest reruns that convert scrollers) ──
-    "back_by_demand": {
-        "label": "Back by Demand",
-        "desc": "Honest rerun: 'you asked again — here it is' with new proof",
-        "formats": ["carousel", "reel"],
-        "weight": 1,
-        "rerun_only": True,
+    # ── Journey-gap concepts (added 2026-10-25 content rebuild) ────────
+    # Every post now names ONE gap in the viewer's journey and shows this
+    # tool closing it. The two fake-demand concepts that used to live here
+    # ("You keep asking about {name} — here it is again" / "200+ started
+    # free last week") were DELETED: a 0-follower page has nobody asking and
+    # the numbers were invented — they also ate every slot because
+    # pick_concept forced a rerun concept whenever a product had posted in
+    # the last 21 days, which with a small catalog is always.
+    "cost_of_waiting": {
+        "label": "The Cost of Waiting",
+        "desc": "What the gap costs them every week it stays open",
+        "formats": ["reel", "carousel"],
+        "weight": 2,
+        "journey": "pain made expensive — quantify what doing nothing costs "
+                   "per week/month, then close it with the tool's first step",
         "hooks": [
-            "You keep asking about {name} — here it is again",
-            "{name} again? Yes. Because it keeps converting.",
-            "The most-requested tool this month: {name}",
+            "Every week without this costs you {benefit}",
+            "The {alt} habit costs more than {name} does",
+            "You pay for the slow way every single week",
         ],
     },
-    "social_proof_drop": {
-        "label": "Social Proof Drop",
-        "desc": "'X people grabbed this last week' momentum post",
+    "quick_win": {
+        "label": "The Quick Win",
+        "desc": "One result they can have today, tool as the enabler",
+        "formats": ["reel", "carousel"],
+        "weight": 2,
+        "journey": "activation — one concrete outcome achievable in minutes, "
+                   "so the click feels like the shortest path to it",
+        "hooks": [
+            "Fix this in 10 minutes, before your next launch",
+            "One setting in {name} changes your whole week",
+            "The fastest first win with {name} ({trial})",
+        ],
+    },
+    "objection_crusher": {
+        "label": "Objection Crusher",
+        "desc": "The real blocker (price / time / skill) answered plainly",
+        "formats": ["reel", "carousel"],
+        "weight": 2,
+        "journey": "objection stage — name the exact reason they are not "
+                   "signing up, answer it with a fact, then ask for the click",
+        "hooks": [
+            "The reason you skip tools like {name} is wrong",
+            "{name} costs {price} — here is what that replaces",
+            "'I do not have time to learn it' — {trial} says try first",
+        ],
+    },
+    "workflow_gap": {
+        "label": "The Missing Step",
+        "desc": "The step between what they already do and the result",
         "formats": ["reel", "carousel"],
         "weight": 1,
-        "rerun_only": True,
+        "journey": "awareness of the gap — they already do most of the work; "
+                   "show the one missing step and that {name} is it",
         "hooks": [
-            "Hundreds grabbed {name}'s free trial last week",
-            "{name} keeps selling itself. Look at the DMs.",
-            "Still thinking about {name}? 200+ started free last week.",
+            "You are one step short of {benefit}",
+            "The step everyone skips after launching",
+            "What happens between the idea and {benefit}",
         ],
     },
 }
@@ -157,45 +192,31 @@ def pick_concept(product: dict, format_name: str, for_date: date, rng,
 
     Rules:
       • concept's formats must include format_name
-      • prefer pairings never used; if all used, allow oldest-used one
-        (naturally cycles without repetition until exhaustion)
-      • if product was featured within min_repeat_days, MUST use a rerun
-        concept (honest framing) instead of pretending it's new
+      • prefer pairings never used; when everything has been used, recycle the
+        LEAST-recently-used pairing (natural cycling, no frozen repeat)
+      • never pick the same concept twice in a row for the same product
+
+    2026-10-25: the old "recently featured -> MUST use a rerun concept" rule
+    is gone. With a small catalog at 1-2 posts/day every product is 'recently
+    featured' every time, so it forced one of the two rerun concepts on ~100%
+    of posts — that is exactly why the feed kept shipping "You keep asking
+    about X — here it is again" / "The most-requested tool this month".
+    Both rerun concepts were deleted with it. is_rerun stays in the return
+    signature (callers print it) and is now always False.
     """
     h = load_history()
     pid = product.get("id") or product["name"]
     eligible = [cid for cid, c in CONCEPTS.items() if format_name in c["formats"]]
-
-    # Repeat-exposure detection: product featured recently?
-    last_iso = h.get("product_last", {}).get(pid)
-    recently_featured = False
-    if last_iso:
-        last = date.fromisoformat(last_iso)
-        if (for_date - last).days < min_repeat_days:
-            recently_featured = True
-
-    rerun_pool = [c for c in eligible if CONCEPTS[c].get("rerun_only")]
-    fresh_pool = [c for c in eligible if not CONCEPTS[c].get("rerun_only")]
+    if not eligible:
+        raise ValueError(f"no concepts support format {format_name!r}")
 
     pairings = set(h.get("pairings", []))
+    concept_last: dict[str, str] = h.get("concept_last", {})
 
-    if recently_featured:
-        # Honest rerun: pick the least-recently-used rerun concept for this product
-        candidates = []
-        for cid in rerun_pool:
-            count = sum(1 for p in pairings if p.startswith(cid + "::" + pid))
-            candidates.append((count, cid))
-        candidates.sort()
-        cid = candidates[0][1] if candidates else rng.choice(eligible)
-        if record:
-            _record(h, cid, pid, for_date)
-        return cid, True
-
-    # Fresh concepts first: unused pairings
-    unused = [c for c in fresh_pool if _pair_key(c, pid) not in pairings]
+    # Unused pairings first, weighted by concept weight.
+    unused = [c for c in eligible if _pair_key(c, pid) not in pairings]
     if unused:
-        # weight by concept weight
-        weighted = []
+        weighted: list[str] = []
         for c in unused:
             weighted += [c] * CONCEPTS[c]["weight"]
         cid = rng.choice(weighted)
@@ -203,15 +224,18 @@ def pick_concept(product: dict, format_name: str, for_date: date, rng,
             _record(h, cid, pid, for_date)
         return cid, False
 
-    # All fresh pairings exhausted for this product+format: recycle oldest
-    used = [c for c in fresh_pool if _pair_key(c, pid) in pairings]
-    if used:
-        cid = rng.choice(used)
-        if record:
-            _record(h, cid, pid, for_date)
-        return cid, False
+    # Everything paired already: least-recently-used first, never the one we
+    # used for this product's previous post.
+    def _last(cid: str) -> str:
+        return concept_last.get(_pair_key(cid, pid), "")
 
-    cid = rng.choice(eligible)
+    used = [c for c in eligible if _pair_key(c, pid) in pairings]
+    order = sorted(used, key=_last)
+    # Skip the concept used most recently for THIS product when an alternative
+    # exists (two products x eight angles means we always have one).
+    recent = order[-1] if order else ""
+    pool = [c for c in order if c != recent] or order
+    cid = rng.choice(pool)
     if record:
         _record(h, cid, pid, for_date)
     return cid, False
@@ -222,4 +246,11 @@ def _record(h: dict, concept: str, pid: str, for_date: date) -> None:
     # keep history bounded
     h["pairings"] = h["pairings"][-500:]
     h.setdefault("product_last", {})[pid] = for_date.isoformat()
+    # recency per concept+product, so recycling is least-recently-used instead
+    # of random (a random recycle repeats visibly with only ~8 angles in play)
+    cl = h.setdefault("concept_last", {})
+    cl[_pair_key(concept, pid)] = for_date.isoformat()
+    if len(cl) > 400:
+        for k in sorted(cl, key=lambda k: cl[k])[: len(cl) - 400]:
+            cl.pop(k, None)
     save_history(h)

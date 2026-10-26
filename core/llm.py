@@ -161,7 +161,21 @@ SYSTEM_BRIEF = (
     "'supercharge', 'unlock', 'game-changing', 'seamless'), and any line that "
     "could describe 10 different tools unchanged. If a line works for a "
     "competitor's post as-is, rewrite it until it only fits this tool. Numbers "
-    "beat adjectives. Keep hook lines under 10 words."
+    "beat adjectives. Keep hook lines under 10 words.\n\n"
+    "SELLING RULE (2026-10-25 content rebuild — this is an ad with a link "
+    "behind it, not a lesson): every post moves ONE reader across ONE gap. "
+    "Shape: the gap they already feel -> this tool closing it (one checkable "
+    "fact) -> what their week looks like after -> ONE ask (free trial, link "
+    "in bio). The reader must finish knowing exactly what to do next.\n"
+    "BANNED CLAIMS (we have no data for any of them): 'most requested', "
+    "'you keep asking', 'back again', 'here it is again', 'X people grabbed "
+    "this', 'hundreds/thousands of users', 'everyone is switching', "
+    "'trending', and any invented popularity, sales or usage number.\n"
+    "BANNED SHAPES: feature tours ('here's what it does: ...'), spec lists, "
+    "product-page copy, tutorials, and generic 'benefits of X' roundups — if "
+    "the post could be about any tool, it is not written yet.\n"
+    "Never promise a result the researched facts do not support, and never "
+    "claim we personally achieved something we did not."
 )
 
 
@@ -265,14 +279,50 @@ def _fit_caption(caption: str, primary_phrase: str = "") -> str:
     return out + "\n\n" + copywriter.DISCLOSURE
 
 
+def _scrub_competitor(text: str, product: dict) -> str:
+    """Replace the rival's brand name with a neutral phrase (2026-10-26).
+
+    Belt to the prompt's braces: naming the competitor is banned in writing,
+    and models still did it in 4 of 8 probe captions because the name is in
+    the prompt as positioning context. The body has no gate that can reject a
+    line, so the guarantee has to be mechanical: 'Mailchimp charges you for
+    dead subscribers' -> 'The old platform charges you for dead subscribers',
+    capitalised when it opens a line or a sentence.
+    """
+    alt = (product.get("alt") or "").strip()
+    if not alt or alt.lower() in {"the old way", "", product.get("name", "").lower()}:
+        return text
+
+    def _sub(m: re.Match) -> str:
+        before = text[max(0, m.start() - 2):m.start()]
+        starts = m.start() == 0 or before.endswith(("\n", ". ", "! ", "? ", "• ", "- "))
+        # 'Your Mailchimp list' must not become 'Your the old platform list' —
+        # drop the article when a determiner already sits in front of it.
+        lead = re.search(r"(\w+)\s*$", text[:m.start()])
+        bare = bool(lead) and lead.group(1).lower() in {
+            "your", "the", "a", "an", "my", "our", "their", "its", "that", "this",
+        }
+        if bare:
+            base = "Old platform" if starts else "old platform"
+        else:
+            base = "The old platform" if starts else "the old platform"
+        return base + ("'s" if m.group(0).lower().endswith("'s") else "")
+
+    return re.sub(rf"\b{re.escape(alt)}(?:'s)?\b", _sub, text, flags=re.IGNORECASE)
+
+
 def write_copy(product: dict, theme: str, fallback_hooks: list[str],
                fallback_slides: list[str], fallback_caption: str,
-               brief: dict | None = None) -> dict | None:
+               brief: dict | None = None, angle: str = "") -> dict | None:
     """Returns {'hook': str, 'slides': [..], 'caption': str} or None on any failure.
 
     brief: per-product research brief (core/briefs) — search keywords real
     people use, attributable blog facts, buyer objections, pain-led angles.
     Without it the model writes from product data alone.
+
+    angle: the ONE user-journey gap this post is built around (from the
+    concept's ``journey`` field). Added 2026-10-25 — without it every post
+    came back as the same benefit list in different words.
 
     The hook is chosen by pick_retention_hook() from 4 scored candidates;
     the caption is the detailed SEO spec (2026-10-05 content review).
@@ -302,6 +352,8 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         f"Price: {product.get('currency', '')} {product.get('price', '')}\n"
         f"Competitor to position against: {product.get('alt', 'the old way')}\n"
         f"Post theme: {theme}\n"
+        f"THE ONE JOURNEY GAP THIS POST CLOSES: "
+        f"{angle or 'the pain the tool removes, made specific'}\n"
         f"{research_block}\n"
         "RETENTION RULES (skip rate decides distribution — first 3 seconds are "
         "the whole game):\n"
@@ -311,14 +363,35 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         "A hook that fits 10 different tools is dead.\n"
         "- Never open with the product or brand name — the frame already shows it. "
         "Pain first, tool as the answer. Never a soft question.\n"
-        "- No intro energy: no 'hey', no context-setting, no 'in this post'.\n\n"
+        "- No intro energy: no 'hey', no context-setting, no 'in this post'.\n"
+        "- The hook appears exactly ONCE: as caption line 1 and as scene 1 on "
+        "screen. It must not come back as a later caption line, a slide, or an "
+        "on-screen reminder — a repeated opening line reads as a loop.\n\n"
+        "SALES SPINE (why this post exists):\n"
+        "- GAP: one specific, felt moment the reader recognizes from their own "
+        "week — cost, time lost, or a result stuck short. Make it concrete in "
+        "the first two lines.\n"
+        "- FIX: introduce the tool as the answer to THAT gap, with one "
+        "checkable fact from the researched list (price, limit, trial terms).\n"
+        "- AFTER-STATE: what the reader's week looks like once the gap is "
+        "closed — one vivid outcome line, in their words, not the spec sheet's.\n"
+        "- ONE ASK: end on a decision (free trial, link in bio). No menu of "
+        "options, no 'save this for later' as the closing move, no second CTA.\n"
+        "- Do not paste the product's benefit list: every • line is the "
+        "viewer's after-state, phrased differently from the last post. A "
+        "feature ('3D analytics') is never a benefit ('you see which post "
+        "earned the subscriber before your coffee').\n\n"
         "SCROLLER-FIRST STRUCTURE:\n"
         '- "hook_options": 4 candidate hooks — each a statement under 10 words, '
-        "each seeded from the researched angles where they fit, each with "
+        "each weaving in the primary search phrase (so whichever one gets "
+        "chosen, the post still opens on the keyword), each seeded from the "
+        "researched angles where they fit, each with "
         '"score": 0-100 for how likely it survives the first 3 seconds '
         "(reward: a number, immediate problem recognition, a concrete cost; "
         "punish: vagueness, tool-name openings, anything a competitor could say).\n"
-        '- "hook": your single best pick from hook_options;\n'
+        '- "hook": your single best pick from hook_options; caption line 1 must '
+        "be VERBATIM that same sentence — the on-screen hook and the caption "
+        "open with identical words.\n"
         "- CAROUSEL ARCHITECTURE (vendored carousel-frameworks.md — this deck "
         "is a swipe-through, not a blog post chopped into squares): pick ONE "
         f"framework, name it in \"framework\" (one of: value_stack, "
@@ -337,14 +410,26 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         "repeated line reads as the same slide twice and kills the swipe.\n\n"
         "SEO CAPTION SPEC (detailed — this caption is meant to rank in IG + "
         "Google search):\n"
-        "- 170-240 words.\n"
-        "- Line 1: a primary search phrase woven into the hook statement — an "
-        "absolute claim, never a question, never tool-name-first. The primary "
+        "- 170-240 words. This floor is a HARD requirement: a caption under "
+        "170 words is not finished. Before you answer, count — you need the "
+        "hook line, the keyword line, 4 bullets (each carrying a real number), "
+        "a two-sentence objection answer, an after-state line, one question and "
+        "the CTA. Shorter means you skipped one of those; add the detail, do not "
+        "pad with new claims.\n"
+        "- Line 1: the primary search phrase woven into the hook statement — an "
+        "absolute claim, never a question, never tool-name-first. Line 1 is "
+        "VERBATIM the hook you chose (same words, no rewrite). The primary "
         "search phrase must appear within the first two lines. The literal "
         f"product name '{product['name']}' MUST appear in the body (one middle "
         "line introduces it as the fix). Never name the competitor.\n"
         "- Never invent trial lengths, discounts, promo codes, or prices — use "
         "only the Free trial / Price values given above.\n"
+        "- Never name a competitor anywhere in the caption (not even in line 1): "
+        "say 'the old way', 'the usual platform', 'what you pay for now'. The "
+        "competitor is the product's alt column, given above — it is context for "
+        f"your positioning only. The literal string '{product.get('alt', '')}' "
+        "must not appear in your hook, your slides or your caption — not "
+        "capitalized, not lowercase, not in a comparison.\n"
         "- The caption MUST use literal line breaks: 5-7 separate lines, one "
         "thought per line, each • bullet on its own line — never one paragraph.\n"
         "- Body: 3-5 short lines. Include the primary keyword phrase exactly "
@@ -402,6 +487,14 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
                                primary_phrase=(brief.get("keywords") or [""])[0])
         if not (hook and slides and caption):
             return None
+        # Deterministic competitor scrub (2026-10-26): the prompt bans naming
+        # the rival, yet 4 of 8 probe captions did it the moment the name sat
+        # in the prompt — 'Stop paying Mailchimp when free tools exist'. The
+        # gate below can only reject a hook, never a body line, so swap the
+        # brand for a neutral phrase here and guarantee it never ships.
+        hook = _scrub_competitor(hook, product)
+        slides = [_scrub_competitor(s, product) for s in slides]
+        caption = _scrub_competitor(caption, product)
         return {"hook": hook, "slides": slides[:6], "framework": framework, "caption": caption}
 
     # Quality bar FIRST (fresh every call — the vendored file can change via
@@ -410,27 +503,32 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
     if bar:
         prompt = f"{bar}\n\n---\n\n{prompt}"
 
-    # Models undershoot length targets; one bounded retry (2026-10-05 the
-    # user picked max-detail captions — 130 words was consistently short).
+    # Models undershoot length targets; bounded retries (2026-10-05 the
+    # user picked max-detail captions — 130 words was consistently short;
+    # 2026-10-26 a third attempt was added because 2/16 probe captions still
+    # landed under the 160-word floor twice in a row). The nudge carries the
+    # ACTUAL word count so the model corrects a specific deficit, not a vibe.
     attempt_prompt = prompt
     last: dict | None = None
-    for _ in range(2):
+    for _ in range(3):
         raw = _generate(attempt_prompt)
         if not raw:
-            return None
+            return last
         try:
             out = _parse(raw)
         except Exception:
-            return None
+            return last
         if out and len(out["caption"].split()) >= 160:
             return out
         if out:
             last = out  # usable but short — retry once for more detail
-            out = None
-        attempt_prompt = (
-            prompt
-            + "\nIMPORTANT: your previous caption was under 160 words — too short "
-            "for this spec. Hit 170-240 words: add another • benefit line with a "
-            "real number, and give the objection answer two sentences of detail."
-        )
+            wc = len(out["caption"].split())
+            attempt_prompt = (
+                prompt
+                + f"\nIMPORTANT: your previous caption was {wc} words — under the "
+                "160-word floor and nowhere near the 170-240 target. Rewrite it "
+                "with real detail: another • benefit line carrying a concrete "
+                "number, and a two-sentence answer to the buyer objection. "
+                "Same hook, same structure, more substance."
+            )
     return last
