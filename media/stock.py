@@ -33,6 +33,7 @@ import requests
 from PIL import Image, ImageOps
 
 from core import config
+from media import common
 
 CACHE_DIR = config.DATA_DIR / "stock"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -381,11 +382,16 @@ def _prune_videos(keep: int = VIDEO_KEEP) -> None:
             pass
 
 
-def _search_pexels_video(query: str, page: int, need_sec: float) -> tuple[str, float] | None:
-    """A portrait clip long enough for the reel, or None."""
+def _list_pexels_videos(query: str, page: int, need_sec: float) -> list[tuple[str, float]]:
+    """Portrait clips long enough for the reel on this page ([] if none).
+
+    Returns the WHOLE candidate list (was: only the first match) so the
+    caller can skip clips used inside the no-repeat window — 2026-10-25.
+    """
     key = os.getenv("PEXELS_API_KEY", "").strip()
     if not key:
-        return None
+        return []
+    out: list[tuple[str, float]] = []
     try:
         r = requests.get(
             PEXELS_VIDEO_API,
@@ -394,8 +400,7 @@ def _search_pexels_video(query: str, page: int, need_sec: float) -> tuple[str, f
             timeout=20,
         )
         if r.status_code != 200:
-            return None
-        candidates = []
+            return []
         for v in r.json().get("videos") or []:
             dur = float(v.get("duration") or 0)
             if dur < need_sec or dur > 45:
@@ -407,12 +412,10 @@ def _search_pexels_video(query: str, page: int, need_sec: float) -> tuple[str, f
             # prefer portrait, then the smallest file >= 1080 on the short side
             files.sort(key=lambda f: ((f.get("height") or 0) <= (f.get("width") or 0),
                                       abs((f.get("height") or 0) - 1920)))
-            candidates.append((files[0]["link"], dur))
-        if candidates:
-            return candidates[0]
+            out.append((files[0]["link"], dur))
     except Exception:
-        return None
-    return None
+        return []
+    return out
 
 
 def video_bg_frames(product: dict, salt: str, need_frames: int, w: int, h: int,
@@ -426,16 +429,33 @@ def video_bg_frames(product: dict, salt: str, need_frames: int, w: int, h: int,
     query = topic_query(product)
     need_sec = need_frames / float(fps) + 1.0
     page = _page_for(salt or "x", query)
-    found = None
-    for p in (page, 1):  # wanted page first, then a stable fallback
-        found = _search_pexels_video(query, p, need_sec)
-        if found:
-            break
-    if not found:
-        return None
-    url, _dur = found
 
-    clip = VIDEO_CACHE / f"{_slug(query)}_{zlib.crc32(url.encode()) & 0xffffffff:08x}.mp4"
+    # Gather candidates across pages, then apply the no-repeat-7-days rule
+    # (user 2026-10-25): a clip used inside the last week is skipped, so two
+    # reels a week apart never share background footage. Only when every
+    # candidate is still warm do we fall back — to the least-recently-used.
+    pool: list[str] = []
+    for p in [page, *[x for x in (1, 2, 3, 4) if x != page]]:
+        for u, _d in _list_pexels_videos(query, p, need_sec):
+            if u not in pool:
+                pool.append(u)
+        if len(pool) >= 12:
+            break
+    if not pool:
+        return None
+    try:
+        day = date.fromisoformat(salt)
+    except ValueError:
+        day = config.now_local().date()
+
+    def _key(u: str) -> str:
+        return f"{_slug(query)}_{zlib.crc32(u.encode()) & 0xffffffff:08x}.mp4"
+
+    spare = [u for u in pool if common.fresh("video", _key(u), day)]
+    url = (spare[0] if spare else
+           min(pool, key=lambda u: common.last_used("video", _key(u)) or "0000-00-00"))
+
+    clip = VIDEO_CACHE / _key(url)
     if not clip.exists():
         try:
             r = requests.get(url, headers={"User-Agent": UA}, timeout=60)
@@ -464,4 +484,5 @@ def video_bg_frames(product: dict, salt: str, need_frames: int, w: int, h: int,
     frames = sorted(tmpdir.glob("bg_*.jpg"))
     if len(frames) < int(need_frames * 0.9):
         return None  # clip too short after crop -> let the caller use Ken Burns
+    common.remember("video", _key(url), day)  # starts its 7-day cooldown
     return frames

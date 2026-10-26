@@ -5,8 +5,10 @@ Three-scene structure (2026-10-04 quality pass; 2026-10-05 retention pass):
                  frame (skip rate is decided in the first 3 seconds).
                  Product name sits under the hero hook, no chips.
   2. BENEFITS  - one line at a time, whole-block rise+fade (no ghost-word
-                 flashing), index badge, product chip top-right (hook
-                 reminder top-left area, CTA pill only on the LAST line)
+                 flashing), product chip top-right, CTA pill only on the
+                 LAST line. The hook is NOT re-drawn here (2026-10-25: the
+                 opening line repeating over every benefit frame read as a
+                 loop) and there is no index badge (removed 2026-10-12).
   3. OUTRO     - end card: product name + trial + big CTA + handle, then
                  a 0.5s fade to black so the video never hard-cuts.
   Chrome (2026-10-05 cleanup): no brand chip (IG's UI shows the handle),
@@ -282,8 +284,20 @@ def build_reel(
     # On-screen lines: AI-written slides first (they name the tool and are
     # written for the screen), CSV benefits as the fallback.
     lines = [str(s).strip() for s in (copy_override or {}).get("slides", []) if str(s).strip()]
+    # Never show the hook twice: scene 1 already owns it, so a slide that
+    # restates it (or any duplicate line) is dropped here — deterministic,
+    # independent of how the copy was written.
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for ln in lines:
+        key = ln.lower()
+        if key == hook.lower() or key in seen:
+            continue
+        seen.add(key)
+        deduped.append(ln)
+    lines = deduped
     if not lines:
-        lines = benefits or ["Check the link in bio"]
+        lines = [b for b in benefits if b.lower() != hook.lower()] or ["Check the link in bio"]
     lines = lines[:5]
     caption = (
         copy_override["caption"]
@@ -351,8 +365,11 @@ def build_reel(
                 local_t = t - intro - idx * slice_t
                 # CTA pill is late-only: it appears with the final
                 # benefit line and walks straight into the outro card.
+                # show_hook=False (user report 2026-10-25): the opening
+                # sentence was re-drawn top-left over every benefit frame.
                 _draw_chrome(frame, hook, palette,
                              product_name=name,
+                             show_hook=False,
                              show_cta=(idx == n_lines - 1))
                 _draw_caption(frame, lines[idx], local_t, slice_t, palette,
                               index=idx + 1, total=n_lines)
@@ -373,7 +390,7 @@ def build_reel(
             str(silent),
         ])
 
-        music = _pick_music(rng, theme)
+        music = _pick_music(rng, theme, for_date=for_date)
         recording = _pick_recording(product)
         if recording:
             _prepend_recording(silent, recording, out_path, seconds=8.0)
@@ -402,30 +419,59 @@ def build_reel(
 MOOD_FOR_THEME = {
     "before_after": "calm",       # transformation story, focused
     "tutorial_teaser": "calm",    # how-to, concentration
-    "deal_alert": "upbeat",       # urgency, energy
-    "free_tools": "upbeat",       # generosity, momentum
-    "saas_stack": "corporate",    # clean, professional roundup
-    "comparison": "corporate",    # sober head-to-head
-    "myth_vs_fact": "corporate",  # authoritative correction
+    "deal_alert": "upbeat",      # urgency, energy
+    "free_tools": "upbeat",      # generosity, momentum
+    "saas_stack": "corporate",   # clean, professional roundup
+    "comparison": "corporate",   # sober head-to-head
+    "myth_vs_fact": "corporate", # authoritative correction
+    # Concept ids (generate.py passes the CONCEPT id, not the calendar theme,
+    # so these keys were missing and mood matching silently fell through to a
+    # random track for almost every post).
+    "hidden_feature": "calm",
+    "day_in_life": "calm",
+    "workflow_gap": "calm",
+    "mistake_angle": "corporate",
+    "cost_of_waiting": "corporate",
+    "objection_crusher": "corporate",
+    "stack_drop": "corporate",
+    "honest_versus": "corporate",
+    "price_transparency": "corporate",
+    "myth_crusher": "corporate",
+    "quick_win": "upbeat",
 }
 
 
-def _pick_music(rng, theme: str = "") -> Path | None:
+def _pick_music(rng, theme: str = "", for_date: date | None = None) -> Path | None:
     """Pick a royalty-free track from assets/music, matched to the theme.
 
     File naming: <mood>-<anything>.mp3 (calm-01.mp3, upbeat-01.mp3,
     corporate-01.mp3 ...). Falls back to any track in the folder when no
     mood-prefixed file exists, and to silence when the folder is empty.
+
+    No-repeat-7-days (user rule 2026-10-25): a track used within the last
+    week is skipped. Order of preference — fresh + mood, then fresh anywhere
+    (a different mood beats a repeat), then least-recently-used overall.
     """
     all_tracks = sorted(config.MUSIC_DIR.glob("*.mp3")) + sorted(config.MUSIC_DIR.glob("*.m4a"))
     if not all_tracks:
         return None
+    day = for_date or config.now_local().date()
     mood = MOOD_FOR_THEME.get(theme, "")
-    if mood:
-        fitting = [t for t in all_tracks if t.stem.lower().startswith(mood)]
-        if fitting:
-            return rng.choice(fitting)
-    return rng.choice(all_tracks)  # no mood files yet -> use whatever exists
+    fitting = [t for t in all_tracks if mood and t.stem.lower().startswith(mood)]
+
+    for group in (fitting, all_tracks):
+        spare = [t for t in group if common.fresh("music", t.name, day)]
+        if spare:
+            pick = rng.choice(spare)
+            common.remember("music", pick.name, day)
+            return pick
+
+    # Every track is inside the cooldown window: take the least-recently-used
+    # one (never random — random re-picks the same track on consecutive days).
+    group = fitting or all_tracks
+    pick = min(group, key=lambda t: common.last_used("music", t.name) or "0000-00-00")
+    common.remember("music", pick.name, day)
+    return pick
 
 
 def _pick_recording(product: dict) -> Path | None:

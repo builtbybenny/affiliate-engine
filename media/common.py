@@ -1,11 +1,62 @@
 """Shared drawing helpers: fonts, gradients, fitted text, progress dots."""
 from __future__ import annotations
 
+import json
+from datetime import date, datetime
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 from core import config
+
+# ── Asset reuse memory (2026-10-25) ─────────────────────────────────────────
+# "Do not repeat the same music or background video for at least a week."
+# A shared JSON memory lets the reel renderer and the stock-video searcher
+# answer the same question without stateless guessing: was this asset used
+# within REUSE_DAYS of the post's date? The scheduler commits this file back
+# after every publish (same pattern as concept_history.json), otherwise each
+# CI run starts with amnesia and repeats itself.
+REUSE_DAYS = 7
+ASSET_HISTORY = config.DATA_DIR / "asset_history.json"
+
+
+def _load_history() -> dict:
+    try:
+        data = json.loads(ASSET_HISTORY.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _save_history(data: dict) -> None:
+    ASSET_HISTORY.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+
+def last_used(kind: str, key: str) -> str:
+    """ISO date this asset was last used for `kind` ('music'/'video'), or ''."""
+    return str(_load_history().get(kind, {}).get(key, ""))
+
+
+def fresh(kind: str, key: str, used_on: date, days: int = REUSE_DAYS) -> bool:
+    """True when the asset has NOT been used within `days` of `used_on`."""
+    prev = last_used(kind, key)
+    if not prev:
+        return True
+    try:
+        return (used_on - date.fromisoformat(prev)).days >= days
+    except ValueError:
+        return True
+
+
+def remember(kind: str, key: str, used_on: date) -> None:
+    h = _load_history()
+    bucket = h.setdefault(str(kind), {})
+    bucket[str(key)] = used_on.isoformat()
+    # bounded: keep the most recent 400 entries per kind
+    if len(bucket) > 400:
+        for k in sorted(bucket, key=lambda k: bucket[k])[: len(bucket) - 400]:
+            bucket.pop(k, None)
+    _save_history(h)
 
 _SYSTEM_FONT_CANDIDATES = [
     # Windows
