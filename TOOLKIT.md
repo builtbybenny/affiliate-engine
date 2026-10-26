@@ -59,7 +59,7 @@ Biggest conversion unlock for SaaS reels (real product UI in first 8s):
 - OBS Studio: https://obsproject.com (free, Windows/macOS/Linux)
 - Settings → Video: Base 2560x1440 or 1920x1080; MP4 output
 - Record ~60s per tool, save as `data/screen_recordings/<id>.mp4`
-  (ids: gohighlevel, systeme, beehiiv, framer)
+  (ids: systeme, beehiiv — framer/gohighlevel removed from the roster 2026-10-25)
 - Windows alternative already installed: Win+G (Xbox Game Bar).
 
 ## 5. Product visuals (10 minutes)

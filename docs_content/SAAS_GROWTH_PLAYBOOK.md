@@ -13,8 +13,10 @@ Reel/Carousel (hook: stack, comparison, before/after)
          → You earn recurring commission for months/years
 ```
 
-Recurring math: 5 GoHighLevel referrals ≈ $195/mo recurring at 40% —
-one good comparison reel can outearn 100 physical-product posts.
+Recurring math: recurring-commission referrals keep paying month after
+month — one good comparison reel can outearn 100 physical-product posts.
+Work each program's own rate; the old GoHighLevel example left with it
+when the roster dropped to Systeme.io + beehiiv (2026-10-25).
 
 ## Week-by-week
 

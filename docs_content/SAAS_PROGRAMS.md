@@ -7,7 +7,6 @@ before applying — programs change. Start with 3–5, don't join everything.
 
 | Tool | Commission | Cookie/notes | Why it converts on IG |
 |---|---|---|---|
-| **GoHighLevel** | 40% recurring | Agency audience; 14-day trial | "Replace 5 tools with 1" narrative |
 | **beehiiv** | Recurring + growth bonuses | 30-day trial, free tier | Newsletter operators are on IG |
 
 ## Tier 2 — free tiers that convert cold traffic
@@ -15,7 +14,6 @@ before applying — programs change. Start with 3–5, don't join everything.
 | Tool | Commission | Angle |
 |---|---|---|
 | **Systeme.io** | Recurring (~60% lifetime per public plan page) | "Launch a funnel free" |
-| **Framer** | Recurring | "Portfolio in a weekend" |
 | **ConvertKit / Kit** | Recurring | Creator email angle |
 | **Cal.com** | 20% for 1 yr (Dub marketplace) | Scheduling angle, DevTools audience |
 | **Superhuman** | 35% for 1 yr (Dub marketplace) | Premium email client, brand recognition |
@@ -24,10 +22,12 @@ before applying — programs change. Start with 3–5, don't join everything.
 
 - Apply with your IG handle + "I publish 12 tool demos/month via automated
   pipeline; bio link hosts my full stack page."
-- Programs accepting you pre-launch: Systeme.io, Framer.
+- Programs accepting you pre-launch: Systeme.io, beehiiv.
 - OUT OF PIPELINE (not applied / removed): Pictory (applied 2026-10-02,
   removed from roster 2026-10-12 by user decision), Notion (program closed),
-  Opus Clip (form has no India option — email appeal pending), Canva (dropped).
+  Opus Clip (form has no India option — email appeal pending), Canva (dropped),
+  GoHighLevel + Framer (both removed from the roster 2026-10-25 — Framer's
+  Creator Program approval never landed and GHL was dropped by user decision).
   Re-add only after an application exists.
 - Amazon-style one-time commissions (< 20%) — skip for SaaS; recurring compounds.
 

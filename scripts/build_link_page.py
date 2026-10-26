@@ -56,6 +56,31 @@ TEMPLATE = """<!doctype html>
 """
 
 
+# Links that are NOT in data/products.csv (user decision 2026-10-25).
+# Writesonic: affiliate application submitted 2026-10-15, approval pending —
+# until the referral link exists we point visitors at the pricing page and
+# claim no commission (rel="nofollow sponsored" only; no offer language).
+# On approval: swap `url` for the referral link (and move the row into
+# products.csv so content can feature it). On refusal: delete this entry.
+PENDING_LINKS = [
+    {
+        "name": "Writesonic",
+        "url": "https://writesonic.com/pricing/agencies",
+        "badge": "AI writing",
+        "price": "",
+        "why": "AI writing and SEO tools — see the agency plans",
+    },
+]
+
+
+def _card(name: str, badge: str, price: str, why: str, url: str) -> str:
+    return (
+        f'<a class="card" href="{url}" rel="nofollow sponsored" target="_blank">'
+        f'<span class="name">{name}</span>{badge}<span class="price">{price}</span>'
+        f'<span class="why">{why}</span></a>'
+    )
+
+
 def main() -> None:
     products = planner.load_products()
     cards = []
@@ -66,11 +91,19 @@ def main() -> None:
         url = html.escape(p.get("url") or "#")
         trial = (p.get("trial") or "").strip()
         badge = f'<span class="badge">{html.escape(trial[:24])}</span>' if trial else ""
-        cards.append(
-            f'<a class="card" href="{url}" rel="nofollow sponsored" target="_blank">'
-            f'<span class="name">{name}</span>{badge}<span class="price">{price}</span>'
-            f'<span class="why">{why}</span></a>'
+        cards.append(_card(name, badge, price, why, url))
+    for p in PENDING_LINKS:
+        badge = (
+            f'<span class="badge">{html.escape(str(p.get("badge", "")))}</span>'
+            if p.get("badge") else ""
         )
+        cards.append(_card(
+            html.escape(str(p.get("name", ""))),
+            badge,
+            html.escape(str(p.get("price", ""))),
+            html.escape(str(p.get("why", ""))),
+            html.escape(str(p.get("url", "#"))),
+        ))
     page = TEMPLATE.format(
         brand=html.escape(config.BRAND_NAME),
         dub_token="6091882d-7007-4988-b901-75498d9c9c53",
