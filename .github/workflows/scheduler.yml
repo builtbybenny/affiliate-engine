@@ -9,6 +9,10 @@ on:
     - cron: "11 12 * * *"  # ~08:11 ET
     - cron: "29 12 * * *"  # ~08:29 ET
     - cron: "47 12 * * *"  # ~08:47 ET forced fallback
+    # Insurance: the 12:11-12:47 window lost every run 2026-10-21..24 to the
+    # Pages race. The guard skips this trigger when the carousel already
+    # published, so it only costs a run when the morning window failed.
+    - cron: "41 13 * * *"  # ~09:41 ET last-ditch retry
     # Reel (evening US-prime):
     - cron: "9 23 * * *"   # ~19:09 ET
     - cron: "27 23 * * *"  # ~19:27 ET
@@ -201,15 +205,26 @@ jobs:
 
       - name: Wait until Pages serves the new files
         if: steps.slot.outputs.run == 'true'
+        env:
+          FMT: ${{ steps.slot.outputs.format }}
         run: |
           sleep 60
           python - <<'PY'
           import os, time, requests
           from pathlib import Path
           base = os.environ["PUBLIC_MEDIA_BASE_URL"]
-          files = [f for f in Path("docs/media").rglob("*") if f.is_file()]
+          fmt = os.environ.get("FMT", "")
+          # Scope the wait to the format we are about to publish. Scanning all
+          # of docs/media picked media/reels/... (r sorts after c), i.e. an OLD
+          # reel file that was already live, so the check passed instantly and
+          # publishing raced ahead of the Pages deploy -> Meta fetched HTML
+          # instead of the slide -> error 9004 on every morning carousel from
+          # 2026-10-21 to 2026-10-24. publish.py then re-checks the exact URLs.
+          sub = "carousels" if fmt == "carousel" else "reels"
+          root = Path("docs") / "media" / sub
+          files = [f for f in root.rglob("*") if f.is_file()]
           if not files:
-              raise SystemExit("no media files found")
+              raise SystemExit(f"no {fmt} media files under {root}")
           # CI checkouts give every file the same mtime, so "newest" must be
           # by path: render folders are date-named, the latest path IS the
           # newest render. Polling it waits for the new Pages deploy.
@@ -241,6 +256,8 @@ jobs:
         if: steps.slot.outputs.run == 'true'
         run: |
           git add data/published_log.csv data/concept_history.json data/research_briefs.json
+          # media/music reuse memory (only exists once a reel has rendered)
+          git add data/asset_history.json 2>/dev/null || true
           git add -f docs/x
           git commit -m "log: published $(date -u +%FT%HZ) + rotation state + X queue" || echo "no changes"
           git pull --rebase origin main || true

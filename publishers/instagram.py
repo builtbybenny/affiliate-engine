@@ -22,22 +22,64 @@ class IGError(RuntimeError):
     pass
 
 
-def _post(path: str, data: dict) -> dict:
-    r = requests.post(f"{API}/{path}", data=data, timeout=60)
-    payload = r.json() if r.headers.get("content-type", "").startswith("application/json") else {"raw": r.text}
-    if r.status_code >= 400:
-        err = payload.get("error", {})
-        raise IGError(f"{r.status_code} {err.get('type')}: {err.get('message')} (code {err.get('code')})")
-    return payload
+# Meta answers two ways when it is having a bad moment, and both have burnt
+# scheduled runs: code 4 "Application request limit reached" (403) and code
+# 9004 "Only photo or video can be accepted as media type" (400) while a
+# container is still settling. Retrying those is safe — a failed container
+# create / media_publish published nothing — whereas auth (190), permission
+# (10/200) and quota errors must fail loudly instead of burning a window.
+_TRANSIENT = (
+    "application request limit reached",
+    "(code 4)",
+    "only photo or video",
+    "(code 9004)",
+    "try again later",
+    "temporarily unavailable",
+)
 
 
-def _get(path: str, params: dict) -> dict:
-    r = requests.get(f"{API}/{path}", params=params, timeout=60)
-    payload = r.json() if r.headers.get("content-type", "").startswith("application/json") else {"raw": r.text}
-    if r.status_code >= 400:
-        err = payload.get("error", {})
-        raise IGError(f"{r.status_code} {err.get('type')}: {err.get('message')} (code {err.get('code')})")
-    return payload
+def _retryable(msg: str) -> bool:
+    low = msg.lower()
+    return any(t in low for t in _TRANSIENT)
+
+
+def _raise(payload: dict, status: int) -> IGError:
+    err = payload.get("error", {})
+    return IGError(f"{status} {err.get('type')}: {err.get('message')} (code {err.get('code')})")
+
+
+def _post(path: str, data: dict, retries: tuple[int, ...] = (15, 30, 60)) -> dict:
+    """POST with bounded backoff on the transient Meta errors only."""
+    last: IGError | None = None
+    for attempt in range(len(retries) + 1):
+        r = requests.post(f"{API}/{path}", data=data, timeout=60)
+        payload = r.json() if r.headers.get("content-type", "").startswith("application/json") else {"raw": r.text}
+        if r.status_code < 400:
+            return payload
+        last = _raise(payload, r.status_code)
+        if attempt < len(retries) and _retryable(str(last)):
+            print(f"  (IG transient on {path}: {last}); retrying in {retries[attempt]}s")
+            time.sleep(retries[attempt])
+            continue
+        raise last
+    raise last or IGError(f"POST {path} failed")
+
+
+def _get(path: str, params: dict, retries: tuple[int, ...] = (10, 25)) -> dict:
+    """GET with the same transient backoff — status polling hits code 4 too."""
+    last: IGError | None = None
+    for attempt in range(len(retries) + 1):
+        r = requests.get(f"{API}/{path}", params=params, timeout=60)
+        payload = r.json() if r.headers.get("content-type", "").startswith("application/json") else {"raw": r.text}
+        if r.status_code < 400:
+            return payload
+        last = _raise(payload, r.status_code)
+        if attempt < len(retries) and _retryable(str(last)):
+            print(f"  (IG transient on {path}: {last}); retrying in {retries[attempt]}s")
+            time.sleep(retries[attempt])
+            continue
+        raise last
+    raise last or IGError(f"GET {path} failed")
 
 
 def publish_image(image_url: str, caption: str) -> str:

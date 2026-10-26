@@ -14,6 +14,7 @@ import csv
 import os
 import re
 import sys
+import time
 from datetime import date as _date
 from pathlib import Path
 
@@ -58,7 +59,14 @@ def log_published(for_date: _date, fmt: str, product_id: str, ig_id: str, fb_id:
 
 def latest_render(fmt: str) -> Path | None:
     base = config.CAROUSELS_DIR if fmt == "carousel" else config.REELS_DIR
-    candidates = sorted(base.glob("**/*"), key=lambda p: p.stat().st_mtime, reverse=True)
+    # A GitHub Actions checkout stamps EVERY file with the same mtime, so
+    # mtime alone is meaningless in CI: tie-break on the path. Our render
+    # folders are date-named (YYYY-MM-DD), so among equal mtimes the
+    # lexicographically greatest path IS the newest render — the repo's own
+    # "pick newest by path" rule, which this function used to violate.
+    candidates = sorted(
+        base.glob("**/*"), key=lambda p: (p.stat().st_mtime, p.as_posix()), reverse=True
+    )
     if fmt == "carousel":
         for c in candidates:
             if c.is_dir() and list(c.glob("slide_*.jpg")):
@@ -88,6 +96,53 @@ def token_has_scope(scope: str) -> bool:
             timeout=15,
         )
         return scope in r.json().get("data", {}).get("scopes", [])
+    except Exception:
+        return False
+
+
+def wait_for_media(urls: list[str], timeout: int = 900, fatal: bool = True) -> bool:
+    """Block until every media URL is publicly served WITH a media content-type.
+
+    Meta fetches these URLs itself. If GitHub Pages has not deployed them
+    yet, Meta receives an HTML 404 page instead of a JPEG/MP4 and answers
+    error 9004 "Only photo or video can be accepted as media type" — every
+    morning carousel failure from 2026-10-21 to 2026-10-24 was exactly this
+    race (the workflow's Pages check was looking at an OLD reel file, so it
+    returned "served" instantly and publishing ran ahead of the deploy).
+
+    Check the precise URLs we are about to hand to the Graph API, right
+    before we hand them over, rather than trusting a generic deploy check.
+    """
+    deadline = time.time() + timeout
+    pending = list(urls)
+    while pending:
+        still: list[str] = []
+        for u in pending:
+            if not _served_as_media(u):
+                still.append(u)
+        if not still:
+            print(f"  media live: all {len(urls)} URL(s) served as media")
+            return True
+        if time.time() >= deadline:
+            msg = f"media not publicly served after {timeout}s: {still[0]}"
+            if fatal:
+                raise SystemExit(msg)
+            print(f"  ({msg})")
+            return False
+        pending = still
+        time.sleep(15)
+    return True
+
+
+def _served_as_media(url: str) -> bool:
+    """True when the URL answers 200 with image/* or video/*."""
+    try:
+        r = requests.head(url, timeout=15, allow_redirects=True)
+        if r.status_code == 405 or r.status_code == 501:  # some CDNs refuse HEAD
+            r = requests.get(url, timeout=20, allow_redirects=True, stream=True)
+            r.close()
+        ctype = (r.headers.get("content-type") or "").lower()
+        return r.status_code == 200 and ("image/" in ctype or "video/" in ctype)
     except Exception:
         return False
 
@@ -157,8 +212,13 @@ def publish(fmt: str, for_date: _date, dry_run: bool, targets: set[str]) -> None
     caption_fb = caption + (f"\n\n{hashtags}" if hashtags else "")
 
     if dry_run:
+        # Offline-friendly: report readiness, never block a dry run.
+        wait_for_media(urls, timeout=3, fatal=False)
         print("(dry run — nothing posted)")
         return
+
+    # Hard gate: never send Meta a URL GitHub Pages has not published yet.
+    wait_for_media(urls)
 
     ig_id = fb_id = ""
     if "ig" in targets:
