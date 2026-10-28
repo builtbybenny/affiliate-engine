@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from core.boot import setup_console; setup_console()
 
-from core import config, copywriter, planner, concepts, llm, briefs
+from core import config, copywriter, planner, concepts, llm, briefs, patterns
 from media import carousel, reel
 
 
@@ -151,6 +151,27 @@ def main() -> None:
               + ("  (honest rerun)" if plan["is_rerun"] else ""))
         print(f"  brief  : {brief_note}")
 
+        # Every few days, hand the writer the SHAPE of what is already working
+        # for this product on Instagram (core/patterns.py). Rest days skip the
+        # network entirely; a failure here never blocks generation.
+        pattern = ""
+        if not patterns.rotation_day(for_date):
+            print(f"  pattern: rest day (mines every {patterns.ROTATION_DAYS} days)")
+        else:
+            watched = patterns.accounts_for(product)
+            if args.dry_run:
+                label = ", ".join(watched) if watched else "no accounts configured"
+                print(f"  pattern: rotation day - would mine {label}")
+            elif not watched:
+                print("  pattern: rotation day - no accounts configured for this product")
+            else:
+                try:
+                    pattern = patterns.brief_for(product, for_date)
+                except Exception:
+                    pattern = ""
+                state = f"signal from {len(watched)} account(s)" if pattern else "no signal, product row only"
+                print(f"  pattern: {state}")
+
         if args.dry_run:
             print("  hook   :", hook)
             print("  slides :", " | ".join(copywriter.build_slide_texts(product, plan["concept"], rng, hook=hook)[:4]))
@@ -171,6 +192,8 @@ def main() -> None:
             angle=concept.get("journey", ""),
             # Reel and carousel get form-specific guidance, not generic "social"
             format_name=fmt,
+            # Shape of what already performs (rotation days only)
+            pattern=pattern,
         )
         if ai_copy:
             print("  copy: AI (Gemini)")

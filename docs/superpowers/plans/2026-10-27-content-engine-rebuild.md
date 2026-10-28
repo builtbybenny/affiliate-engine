@@ -69,3 +69,41 @@ Second pass over the same boundary, after reading every published caption and ru
 6. **Form-aware prompt.** Reels get first-frame-legible, three-line guidance; carousels get cover-promise, swipe-earning guidance. Optional `format_name=` kwarg keeps `write_copy()` backward compatible.
 7. **Model fallback ordered by writing quality.** Live probe: the newest model returns HTTP 503 under free-tier load, and the old order put the lite model second, so every 503 silently downgraded all captions in that run. Full models now sit above lite and the retired `gemini-2.5-flash` name (HTTP 404) is gone. Failover mechanics are unchanged.
 8. **Checks.** `tests/test_content_quality.py` grew from 10 to 20 offline tests covering all of the above plus a sparse future-product row; `compileall`, both dry-run formats, live drafts for both products, and a carousel + reel render were run against shipped code. The reel render needs its network stock-footage step stubbed locally; that dependency and its behaviour are unchanged.
+
+## Pattern mining — learning form from posts that already work (2026-10-28)
+
+**Problem.** At two products and 0 followers, the engine had no external read on what
+actually lands for these tools. The tempting shortcut — find a high-performing post,
+rewrite it, publish it — is the one thing Instagram penalises: its originality guidance
+treats a reworded repost as a superficial edit ("if removing your contribution leaves
+virtually the same content"), and 10+ reused posts in 30 days can cost recommendation
+eligibility, which for this account is nearly all reach. Hashtag discovery is also
+gated behind an app review we do not have (`ig_hashtag_search` → error #10).
+
+**What it does.** `core/patterns.py` reads public posts from accounts named per product
+(`data/pattern_sources.csv`) through Instagram's Business Discovery endpoint, ranks each
+account's posts by likes + 2×comments, keeps the strongest third, and describes only
+FORM: which opening shape dominates, how many keep the opening under 10 words, and which
+topic buckets over-index. Wording, claims and numbers never leave the source posts.
+
+**Rotation.** Driven by the date alone (`date.toordinal() % 3 == 0`), so the signal is
+used in roughly one post in three — never every post — and a local run agrees with a CI
+run without any state to commit. No cron, workflow or scheduling change.
+
+**Constraints kept.** Only shapes our own gates accept are reported: question hooks and
+openings over 10 words perform for other accounts but would fail `validate_copy`, so
+they are excluded from the digest rather than taught. Product rows remain the only
+source of factual claims.
+
+**Scaling.** A new product needs one CSV row (`product_id,account`) and no code change.
+A product with no row, no token, a rate limit, an HTTP error, a caption-less post or an
+unparseable reply all degrade to "no signal" and generation continues; the 20-second
+timeout bounds the worst case. Results are cached per product+day in memory, so one
+process (both formats) makes at most one call per account. `--dry-run` never touches the
+network.
+
+**Verification.** 9 offline tests in `tests/test_pattern_mining.py` (rotation spacing,
+per-product mapping, unknown product, dry-run, ranking, hook-kind classification,
+digest-never-quotes via 6-gram overlap, API failure, fetch-once + prompt wiring), plus a
+live digest for both products and a live accepted draft produced with the signal in the
+prompt.

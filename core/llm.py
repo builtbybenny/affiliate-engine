@@ -419,7 +419,7 @@ _FORM_GUIDANCE = {
 def write_copy(product: dict, theme: str, fallback_hooks: list[str],
                fallback_slides: list[str], fallback_caption: str,
                brief: dict | None = None, angle: str = "",
-               format_name: str = "") -> dict | None:
+               format_name: str = "", pattern: str = "") -> dict | None:
     """Return validated {'hook','slides','framework','caption'} or None.
 
     Product-row values are the only source of factual claims. Brief keywords
@@ -444,6 +444,13 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         + bullet(recent_openings, 8)
     ) if recent_openings else ""
 
+    # Shape-only performance guidance (core/patterns.py). Never evidence and
+    # never wording to reuse: the copy is still written from the product row.
+    pattern_block = (
+        "What resonates for this tool on Instagram (form only, not facts, do not "
+        f"reuse any wording): {pattern.strip()}\n"
+    ) if pattern else ""
+
     context = (
         f"Product: {product.get('name', '')}\n"
         f"Catalog benefits: {bullet(benefits)}\n"
@@ -451,6 +458,7 @@ def write_copy(product: dict, theme: str, fallback_hooks: list[str],
         f"Catalog plan/price: {product.get('currency', '')} {product.get('price', '')}; {trial}\n"
         f"Editorial angle: {angle or theme}\n"
         f"Format: {_FORM_GUIDANCE.get(format_name, _FORM_GUIDANCE['carousel'])}\n"
+        f"{pattern_block}"
         f"Search vocabulary (not evidence): {bullet(brief.get('keywords', []), 5)}\n"
         f"Buyer questions (not evidence): {bullet(brief.get('objections', []), 3)}\n"
         f"{avoid_block}"
