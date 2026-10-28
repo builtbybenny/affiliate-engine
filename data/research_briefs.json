@@ -1,4 +1,46 @@
 {
-  "updated": "",
-  "products": {}
+  "updated": "2026-10-25T03:20:33+00:00",
+  "products": {
+    "systeme": {
+      "keywords": [
+        "best email newsletter tools",
+        "send newsletters for free",
+        "free sales funnel builder",
+        "all in one marketing platform",
+        "kajabi free alternative",
+        "sell courses online for free",
+        "free email marketing software"
+      ],
+      "objections": [
+        "Can a completely free plan actually run my business without hidden fees?",
+        "Will my emails end up in the spam folder on a free system?",
+        "Is moving my funnels and email list going to take days of tech work?"
+      ],
+      "built": "2026-10-25T03:18:53+00:00",
+      "sources": {
+        "headlines": 24,
+        "articles": 5
+      }
+    },
+    "beehiiv": {
+      "keywords": [
+        "best email newsletter tools",
+        "send newsletters for free",
+        "beehiiv vs mailchimp",
+        "newsletter growth platform",
+        "free newsletter software",
+        "monetize email newsletter"
+      ],
+      "objections": [
+        "Will my monthly bill jump drastically the second my subscriber list grows?",
+        "Is it actually difficult to switch over from Mailchimp without losing my templates?",
+        "Do I really need built-in 3D analytics if I just want to send a basic weekly email?"
+      ],
+      "built": "2026-10-25T03:20:29+00:00",
+      "sources": {
+        "headlines": 24,
+        "articles": 5
+      }
+    }
+  }
 }

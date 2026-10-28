@@ -1,0 +1,8 @@
+Your current newsletter builder charges you for breathing.
+{'line': '4 ways to grow your newsletter without paying platform fees.'}
+{'line': 'Import your entire list from Mailchimp in under two minutes.'}
+{'line': 'Turn up to 2,500 subscribers into paying readers for zero dollars.'}
+{'line': 'Tap the built-in recommendation network to scale your daily readership.'}
+{'line': 'Launch subscriber chats and AI features without opening a second app.'}
+{'line': 'Claim 14 days free plus 20% off with the link in bio.'}
+Free trial: 14 days free + 20% off
