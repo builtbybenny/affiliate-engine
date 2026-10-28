@@ -44,7 +44,9 @@ def _ensure_product_named(caption: str, product: dict) -> str:
     if name.lower() in caption.lower():
         return caption
     trial = (product.get("trial") or "").strip()
-    line = f"The tool: {name}" + (f" — {trial}." if trial else ".")
+    # Read as a normal sentence, not a form field: "This is beehiiv — 14 days
+    # free + 20% off." Only the catalog's own trial wording is reused.
+    line = f"This is {name}" + (f" — {trial[0].lower() + trial[1:] if trial else ''}." if trial else ".")
     marker = "Affiliate link"
     if marker in caption:
         return caption.replace(marker, f"{line}\n\n{marker}", 1)
@@ -131,18 +133,16 @@ def main() -> None:
         concept = concepts.CONCEPTS[plan["concept"]]
         rng = random.Random(for_date.toordinal() + (0 if fmt == "carousel" else 1))
 
-        # Research brief (core/briefs): real blog facts + search keywords
-        # for THIS product, refreshed weekly in CI and lazily when stale.
-        # The static hook bank was dumped 2026-10-05 — hooks are now written
-        # and retention-scored per post (llm.pick_retention_hook).
+        # Use only a fresh, current cached vocabulary/objection brief. Research
+        # fetches and distillation run in weekly CI, never in the post hot path.
         try:
-            brief = briefs.get(product, refresh=not args.dry_run)
+            brief = briefs.get(product, refresh=False)
         except Exception:
             brief = {}
         brief_note = (
-            f"{len(brief.get('keywords', []))} kw / {len(brief.get('facts', []))} facts"
-            + (" (stale)" if brief.get("stale") else "")
-        ) if brief else "none"
+            f"{len(brief.get('keywords', []))} current search terms / "
+            f"{len(brief.get('objections', []))} buyer questions"
+        ) if brief else "no current brief; using product-row details"
 
         # Template hook: concept bank as fallback when AI copy is down.
         hook = copywriter.hook_from_concept(concept, product, rng)
@@ -163,12 +163,14 @@ def main() -> None:
             # Human-readable label, not the raw id: the model used to read
             # 'Post theme: back_by_demand' and duly write demand copy.
             concept["label"],
-            fallback_hooks=concept["hooks"],
+            fallback_hooks=concept.get("hooks", []),
             fallback_slides=[],
             fallback_caption="",
             brief=brief,
             # The ONE journey gap this post closes (drives hook + caption + CTA)
             angle=concept.get("journey", ""),
+            # Reel and carousel get form-specific guidance, not generic "social"
+            format_name=fmt,
         )
         if ai_copy:
             print("  copy: AI (Gemini)")

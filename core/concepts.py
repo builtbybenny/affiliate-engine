@@ -16,156 +16,97 @@ from core import config
 
 HISTORY = config.DATA_DIR / "concept_history.json"
 
-# Every concept carries its own hook bank. {name} = tool, {benefit}, {alt},
-# {price}, {trial}. "rerun" concepts are for the repeat-exposure weave.
+# Concepts choose an editorial lens. Hooks are generated from the product row
+# at runtime so new products inherit the same evidence and quality rules.
 CONCEPTS: dict[str, dict] = {
     "stack_drop": {
-        "label": "The Stack Drop",
-        "desc": "Multi-tool stack carousel with prices — save + share bait",
+        "label": "The Stack Lens",
+        "desc": "A focused look at the featured product's listed capabilities",
         "formats": ["carousel"],
         "weight": 2,
-        "hooks": [
-            "5 tools that run my entire business (and what I pay)",
-            "My {name} workflow in one stack - steal it",
-            "The 5-tool stack that replaced a whole team",
-        ],
     },
     "before_after": {
-        "label": "Before / After",
-        "desc": "Time transformation: hours -> minutes with {name}",
+        "label": "Workflow Fit",
+        "desc": "Connect a reader's workflow to listed product capabilities",
         "formats": ["reel"],
         "weight": 2,
-        "hooks": [
-            "This {name} workflow took 6 hours. Now: 20 minutes.",
-            "Before {name}: chaos. After {name}: {benefit}.",
-            "I fired 3 subscriptions after finding {name}",
-        ],
     },
     "honest_versus": {
-        "label": "Honest Versus",
-        "desc": "{name} vs {alt} — fit-by-budget breakdown, no trashing",
+        "label": "Plan Comparison",
+        "desc": "Check plan fit using current terms and listed capabilities",
         "formats": ["carousel"],
         "weight": 2,
-        "hooks": [
-            "{name} vs {alt}: the honest breakdown",
-            "Stop paying for {alt} until you see this",
-            "{name} or {alt}? The 5-slide answer",
-        ],
     },
     "hidden_feature": {
-        "label": "Hidden Feature",
-        "desc": "One specific underused feature of {name} that saves hours",
+        "label": "Product Detail",
+        "desc": "Explain one listed capability without inventing outcomes",
         "formats": ["reel"],
         "weight": 2,
-        "hooks": [
-            "The {name} trick nobody tells you about",
-            "90% of {name} users never find this feature",
-            "Do this in {name} before your next launch",
-        ],
     },
     "price_transparency": {
         "label": "Price Transparency",
-        "desc": "What {name} costs vs what it replaces — honest math",
+        "desc": "Review listed price and terms without inventing savings",
         "formats": ["carousel"],
         "weight": 1,
-        "hooks": [
-            "What {name} actually costs (and what it replaces)",
-            "{name} pricing, honestly: {price}. The math inside.",
-            "Is {name} worth it? The honest cost breakdown.",
-        ],
     },
     "mistake_angle": {
-        "label": "The Mistake",
-        "desc": "The expensive mistake {name} prevents",
+        "label": "Decision Check",
+        "desc": "A decision point answered with verified product details",
         "formats": ["reel", "carousel"],
         "weight": 1,
-        "hooks": [
-            "Stop losing hours to tools {name} replaces",
-            "This {name} setup mistake costs you hours every week",
-            "Most people use {name} wrong. Here's the fix.",
-        ],
     },
     "day_in_life": {
-        "label": "Day in the Life",
-        "desc": "{name} slotted into a real workday timeline",
+        "label": "Workflow Context",
+        "desc": "A realistic workflow scenario without claiming personal experience",
         "formats": ["reel"],
         "weight": 1,
-        "hooks": [
-            "A Tuesday with {name}: 9-to-5 in 15 seconds",
-            "Where {name} fits in my actual workday",
-            "My 9:00 uses {name}. My 14:00 needs it too.",
-        ],
     },
     "myth_crusher": {
-        "label": "Myth Crusher",
-        "desc": "Objection demolition: '{name} is complicated/pricey'",
+        "label": "Objection Check",
+        "desc": "Answer an objection only when listed facts support it",
         "formats": ["carousel"],
         "weight": 1,
-        "hooks": [
-            "Myth: you need {alt}. Fact: {name} does it free.",
-            "\"{name} is complicated\" - watch me set it up in 60s",
-            "Myth: good tools cost a lot. Fact: {name} starts free.",
-        ],
     },
     # ── Journey-gap concepts (added 2026-10-25 content rebuild) ────────
-    # Every post now names ONE gap in the viewer's journey and shows this
-    # tool closing it. The two fake-demand concepts that used to live here
+    # Every post chooses ONE relevant reader decision or gap. Quantify a cost
+    # or outcome only when the product row supplies evidence. The two fake-
+    # demand concepts that used to live here
     # ("You keep asking about {name} — here it is again" / "200+ started
     # free last week") were DELETED: a 0-follower page has nobody asking and
     # the numbers were invented — they also ate every slot because
     # pick_concept forced a rerun concept whenever a product had posted in
     # the last 21 days, which with a small catalog is always.
     "cost_of_waiting": {
-        "label": "The Cost of Waiting",
-        "desc": "What the gap costs them every week it stays open",
+        "label": "Cost or Trade-off",
+        "desc": "Describe a real trade-off; quantify only when evidence is supplied",
         "formats": ["reel", "carousel"],
         "weight": 2,
-        "journey": "pain made expensive — quantify what doing nothing costs "
-                   "per week/month, then close it with the tool's first step",
-        "hooks": [
-            "Every week without this costs you {benefit}",
-            "The {alt} habit costs more than {name} does",
-            "You pay for the slow way every single week",
-        ],
+        "journey": "decision stage — name a cost only when the product data "
+                   "supports it; otherwise describe the trade-off without numbers",
     },
     "quick_win": {
-        "label": "The Quick Win",
-        "desc": "One result they can have today, tool as the enabler",
+        "label": "Quick Start",
+        "desc": "One clear next step based on a listed product capability",
         "formats": ["reel", "carousel"],
         "weight": 2,
-        "journey": "activation — one concrete outcome achievable in minutes, "
-                   "so the click feels like the shortest path to it",
-        "hooks": [
-            "Fix this in 10 minutes, before your next launch",
-            "One setting in {name} changes your whole week",
-            "The fastest first win with {name} ({trial})",
-        ],
+        "journey": "activation — identify a useful next step tied to a listed "
+                   "capability; do not promise a speed or outcome the data omits",
     },
     "objection_crusher": {
-        "label": "Objection Crusher",
-        "desc": "The real blocker (price / time / skill) answered plainly",
+        "label": "Objection Response",
+        "desc": "Address one blocker only when the product row supports an answer",
         "formats": ["reel", "carousel"],
         "weight": 2,
-        "journey": "objection stage — name the exact reason they are not "
-                   "signing up, answer it with a fact, then ask for the click",
-        "hooks": [
-            "The reason you skip tools like {name} is wrong",
-            "{name} costs {price} — here is what that replaces",
-            "'I do not have time to learn it' — {trial} says try first",
-        ],
+        "journey": "objection stage — answer only with a matching catalog fact; "
+                   "if the row does not support an answer, do not invent one",
     },
     "workflow_gap": {
-        "label": "The Missing Step",
-        "desc": "The step between what they already do and the result",
+        "label": "Workflow Step",
+        "desc": "A possible next step, grounded in a listed product capability",
         "formats": ["reel", "carousel"],
         "weight": 1,
-        "journey": "awareness of the gap — they already do most of the work; "
-                   "show the one missing step and that {name} is it",
-        "hooks": [
-            "You are one step short of {benefit}",
-            "The step everyone skips after launching",
-            "What happens between the idea and {benefit}",
-        ],
+        "journey": "awareness — connect a reader's current task to a listed "
+                   "capability only when the product row supports the link",
     },
 }
 

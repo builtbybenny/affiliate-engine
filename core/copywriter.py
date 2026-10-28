@@ -6,62 +6,15 @@ copy by editing data/hashtags.txt or the template lists below.
 from __future__ import annotations
 
 import random
+import re
 from datetime import date
 
 from core import config, planner
 
-# Hook templates per theme. {name} = tool, {benefit} = first benefit,
-# {price} = price column, {alt} = competitor from 'alt' column.
-HOOKS: dict[str, list[str]] = {
-    "saas_stack": [
-        "5 tools that run my entire business (and what I pay)",
-        "My entire {name} workflow in one stack — steal it",
-        "The 5-tool stack that replaced a whole team",
-    ],
-    "before_after": [
-        "This {name} workflow took 6 hours. Now: 20 minutes.",
-        "Before {name}: chaos. After {name}: {benefit}.",
-        "I fired 3 subscriptions after finding {name}",
-    ],
-    "comparison": [
-        "{name} vs {alt}: the honest breakdown",
-        "Stop paying for {alt} until you see this",
-        "{name} or {alt}? The 5-slide answer",
-    ],
-    "tutorial_teaser": [
-        "The {name} trick nobody tells you about",
-        "Do this in {name} before your next launch",
-        "Set up {name} once, {benefit} forever",
-    ],
-    "free_tools": [
-        "{name} is free for this — nobody notices",
-        "You're paying for tools that have a free tier",
-        "5 things you can do with {name} without paying a rupee",
-    ],
-    "deal_alert": [
-        "{name} pricing just changed — check this",
-        "If you use {alt}, look at {name}'s pricing page today",
-        "Lifetime deal spotted: {name}",
-    ],
-    "myth_vs_fact": [
-        "Myth: you need {alt}. Fact: {name} does it free.",
-        "\"{name} is complicated\" — watch me set it up in 60s",
-        "Myth: {benefit} needs a big budget. Fact: {name}.",
-    ],
-}
-
-CTA_LINES = [
-    "🔗 Free trial + full breakdown in bio",
-    "🔗 I stack all my links in the bio — grab the free trial",
-    "📌 Save this · 🔗 bio link has the free-trial link",
-    "🔗 Bio link → start free, thank me later",
-    "🔗 Everything I use sits behind one bio link — start free",
-    "Save this for your next tool audit 📌 — trial link is in the bio 🔗",
-    "🔗 Tap the bio link to try it free — I only list tools I actually use",
-    "This one earned a permanent slot in my stack 📌 trial link in bio 🔗",
-    "📌 Bookmark this. Free trial is one bio-tap away 🔗",
-    "🔗 Bio link → try the free tier yourself, no card needed",
-]
+# Hooks are generated from each product row at runtime. Keeping an empty
+# legacy mapping prevents older imports from breaking while ensuring retired
+# fixed hooks cannot enter a future post.
+HOOKS: dict[str, list[str]] = {}
 
 # Plain-English FTC disclosure (user decision 2026-10-05): a full sentence
 # beats a #ad hashtag — clearer to readers, still satisfies affiliate-program
@@ -120,7 +73,8 @@ def featured_tag(for_date: date | None = None) -> str:
 
 _BANNED_HOOK_WORDS = (
     "supercharge", "unlock", "game-chang", "seamless", "next level",
-    "take it to the next", "elevate", "revolutioni",
+    "take it to the next", "elevate", "revolutioni", "nobody talks",
+    "secret", "hidden feature", "everyone is", "most requested",
 )
 
 
@@ -161,52 +115,144 @@ def punchy(line: str) -> bool:
     return not any(w in low for w in _BANNED_HOOK_WORDS)
 
 
+# ── Anti-repetition memory (2026-10-27) ────────────────────────────────────
+# Two products at 2 posts/day means each product opens ~12 posts a month. A
+# fallback hook that is deterministic per product therefore ships the SAME
+# sentence over and over, which is the fastest way to look automated. The
+# engine now reads its own published captions back from the committed Pages
+# archive (docs/media) — the exact files followers saw — so it remembers what
+# it already said. No new state file to commit from CI, no network call, and a
+# product added tomorrow builds this memory from its own first post onward.
+ARCHIVE_DIR = config.ROOT / "docs" / "media"
+_ARCHIVE_READ_LIMIT = 40
+_RECENT_HOOK_CACHE: dict[str, list[str]] = {}
+
+
+def _first_line(path) -> str:
+    try:
+        for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            if line.strip():
+                return line.strip()
+    except OSError:
+        return ""
+    return ""
+
+
+def recent_hooks(product: dict, limit: int = 12) -> list[str]:
+    """Opening lines of this product's most recent published captions.
+
+    Newest first. Read-only and best-effort: a missing archive simply means
+    "no memory yet". Works for any product id, including one added tomorrow.
+    """
+    pid = planner.slugify(str(product.get("id") or product.get("name") or ""))
+    if not pid:
+        return []
+    cache_key = f"{pid}|{limit}"
+    if cache_key in _RECENT_HOOK_CACHE:
+        return list(_RECENT_HOOK_CACHE[cache_key])
+
+    sources: list[tuple[str, object]] = []
+    try:
+        sources += [
+            (d.name, d / "caption.txt")
+            for d in sorted((ARCHIVE_DIR / "carousels").glob(f"*_{pid}"))
+        ][-_ARCHIVE_READ_LIMIT:]
+    except OSError:
+        pass
+    try:
+        sources += [
+            (f.name, f)
+            for f in sorted((ARCHIVE_DIR / "reels").glob(f"*_{pid}_caption.txt"))
+        ][-_ARCHIVE_READ_LIMIT:]
+    except OSError:
+        pass
+
+    found: list[str] = []
+    # Names start with the ISO date, so sorting is chronological.
+    for _, path in sorted(sources, key=lambda item: item[0]):
+        line = _first_line(path)
+        if line and line not in found:
+            found.append(line)
+    found = found[::-1][:limit]
+    _RECENT_HOOK_CACHE[cache_key] = found
+    return list(found)
+
+
+def _hook_key(text: str) -> str:
+    return re.sub(r"\s+", " ", str(text or "").strip()).casefold()
+
+
+# Truthful framings of one catalog detail. Every shape states only what the
+# product row states, names the product, and stays inside the 10-word hook
+# budget. Volume comes from which detail is used and from rng, not from
+# inventing new claims. Second value = words the shape adds besides name/detail.
+_HOOK_SHAPES: tuple[tuple[str, int], ...] = (
+    ("{detail} — {name}.", 1),
+    ("{name}: {detail}.", 0),
+    ("{detail}. That's {name}.", 2),
+)
+
+
 def pick_hook(theme: str, product: dict, rng: random.Random) -> str:
-    hooks = HOOKS.get(theme) or HOOKS["saas_stack"]
-    tpl = rng.choice(hooks)
-    benefit = (planner.parse_benefits(product) or ["save hours every week"])[0].lower().rstrip(".")
-    return tpl.format(
-        name=product["name"],
-        benefit=benefit,
-        alt=(product.get("alt") or "the old way").strip(),
-        price=(product.get("price") or "").strip(),
-    )
+    """Specific, truthful fallback hook built only from the active row.
+
+    Deterministic for a given rng seed (so a run is reproducible) but varied
+    across dates and concepts, and it skips openings this product already used
+    in recent published posts.
+    """
+    name = str(product.get("name") or "This tool").strip()
+    name_words = len(name.split())
+    details = [
+        *planner.parse_benefits(product),
+        str(product.get("specs") or "").strip(),
+        str(product.get("trial") or "").strip(),
+    ]
+    # Keep each detail's full wording (numbers/units stay together); a detail
+    # that cannot fit the hook budget is dropped rather than truncated.
+    details = [detail.strip().rstrip(".!?") for detail in details if detail.strip()]
+
+    def build(source: list[str]) -> list[str]:
+        out: list[str] = []
+        for detail in source:
+            for shape, fixed_words in _HOOK_SHAPES:
+                if len(detail.split()) > 10 - name_words - fixed_words:
+                    continue
+                text = shape.format(detail=detail, name=name)
+                if len(text.split()) > 10 or not punchy(text):
+                    continue
+                if not hook_coherent(text, product, from_ai=False):
+                    continue
+                out.append(text)
+        return out
+
+    # A detail that carries a number or a plan term is the most concrete thing
+    # the row can say, so those lead; otherwise every listed detail competes.
+    pool = build([d for d in details if re.search(r"\d", d)]) or build(details)
+    if not pool:
+        return f"{name}: check the listed details."
+
+    recent = {_hook_key(hook) for hook in recent_hooks(product)}
+    fresh = [hook for hook in pool if _hook_key(hook) not in recent]
+    return rng.choice(fresh or pool)
 
 
 def hook_from_concept(concept: dict, product: dict, rng: random.Random) -> str:
-    """Format a hook from a concept's own bank (concepts.py)."""
-    tpl = rng.choice(concept["hooks"])
-    benefit = (planner.parse_benefits(product) or ["save hours every week"])[0].lower().rstrip(".")
-    # Price display: bare CSV numbers read wrong in hooks ("worth 97").
-    # USD gets a $ sign; zero becomes the word "free".
-    price = (product.get("price") or "").strip()
-    currency = (product.get("currency") or "USD").strip().upper()
-    if price == "0":
-        price = "free"
-    elif price and currency == "USD":
-        price = f"${price}"
-    return tpl.format(
-        name=product["name"],
-        benefit=benefit,
-        alt=(product.get("alt") or "the old way").strip(),
-        price=price,
-        trial=(product.get("trial") or "free to start").strip(),
-    )
+    """Generate the same truthful product-specific hook for every concept."""
+    return pick_hook(str(concept.get("label") or ""), product, rng)
 
 
 def build_slide_texts(product: dict, theme: str, rng: random.Random, hook: str = "") -> list[str]:
-    """Short on-slide headlines: hook first, then benefits, then CTA."""
+    """Short, deduplicated product details followed by one honest CTA."""
     slides = [hook or pick_hook(theme, product, rng)]
-    slides += [b for b in planner.parse_benefits(product)]
-    specs = (product.get("specs") or "").strip()
-    if specs:
-        slides.append(specs)
-    trial = (product.get("trial") or "").strip()
-    slides.append(
-        f"Free trial: {trial}"
-        if trial
-        else "Save this 📌  |  Link in bio 🔗"
-    )
+    seen = {slides[0].strip().casefold()}
+    hook_text = slides[0].casefold()
+    for detail in [*planner.parse_benefits(product), str(product.get("specs") or "").strip()]:
+        detail = detail.strip()
+        normalized = detail.casefold()
+        if detail and normalized not in seen and normalized not in hook_text:
+            slides.append(detail)
+            seen.add(normalized)
+    slides.append("Check the current terms via the link in bio")
     return slides
 
 
@@ -214,50 +260,34 @@ def build_caption(
     product: dict, theme: str, for_date: date, rng: random.Random,
     include_hashtags: bool = True, hook: str = "",
 ) -> str:
-    name = product["name"]
+    """Truthful, compact fallback caption built only from the product row.
+
+    Reads like a person wrote it: the listed detail, the listed terms, one
+    next step, disclosure. No engagement bait and no internal labels.
+    """
+    name = str(product.get("name") or "This tool").strip()
     benefits = planner.parse_benefits(product)
-    price = (product.get("price") or "").strip()
-    currency = (product.get("currency") or "").strip()
-    trial = (product.get("trial") or "").strip()
+    trial = str(product.get("trial") or "").strip()
+    specs = str(product.get("specs") or "").strip()
 
-    # Meta hardening (2026-10-02): rotate structure, bullet marks and
-    # section order so consecutive posts don't share an identical skeleton.
-    # Every variant carries the same information — only the shape changes.
-    variant = rng.randrange(3)
-    mark = ("✅", "🔹", "👉")[variant]
-    headers = [
-        "Why it earns its slot in my stack:",
-        "Why I keep it in the rotation:",
-        "",  # variant 2: headerless, punchier
-    ]
-    benefit_block: list[str] = []
-    if benefits:
-        header = headers[variant]
-        benefit_block = ([header] if header else []) + [f"{mark} {b}" for b in benefits]
-    info: list[str] = []
-    if specs := (product.get("specs") or "").strip():
-        info.append(f"⚙️ {specs}")
-    if trial:
-        info.append(f"🎁 Free trial: {trial}")
-    if price:
-        info.append(f"💰 {currency} {price}".replace("  ", " "))
-
-    blocks: list[str] = [hook or pick_hook(theme, product, rng)]
-    if variant == 0:
-        order = [benefit_block, info]
-    elif variant == 1:
-        order = [info[::-1], benefit_block]
-    else:
-        order = [[info[0]] if info else [], benefit_block, info[1:]]
-    for part in order:
-        if part:
-            blocks.append("\n".join(part))
-    blocks.append(rng.choice(CTA_LINES))
+    opening = hook or pick_hook(theme, product, rng)
+    blocks: list[str] = [opening]
+    seen = {opening.strip().casefold()}
+    for benefit in benefits[:3]:
+        key = benefit.strip().casefold()
+        if key and key not in seen and key not in opening.casefold():
+            blocks.append(benefit.strip())
+            seen.add(key)
+    if specs and specs.strip().casefold() not in seen and specs.strip().casefold() not in opening.casefold():
+        blocks.append(specs.strip())
+        seen.add(specs.strip().casefold())
+    if trial and trial.strip().casefold() not in seen and trial.strip().casefold() not in opening.casefold():
+        blocks.append(f"{trial.strip().rstrip('.')}.")
+    blocks.append(f"Check {name}'s current terms through the link in bio.")
     blocks.append(DISCLOSURE)
     if include_hashtags:
         blocks.append(hashtag_block(product, rng, for_date=for_date))
-    caption = "\n\n".join(blocks)
-    return caption[:2200]  # IG hard limit
+    return "\n\n".join(blocks)[:2200]
 
 
 def build_first_comment(product: dict, rng: random.Random,

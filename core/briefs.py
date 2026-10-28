@@ -246,7 +246,11 @@ def _distill(product: dict, topic: str, headlines: list[str], articles: list[str
         "objections": [str(o).strip() for o in data.get("objections", []) if str(o).strip()][:4],
         "angles": [str(a).strip() for a in data.get("angles", []) if str(a).strip()][:6],
     }
-    return brief if brief["keywords"] and brief["angles"] else None
+    # Research is used for vocabulary and buyer language only. The harvested
+    # material lacks URL/date provenance suitable for publishing factual claims.
+    brief["facts"] = []
+    brief["angles"] = []
+    return brief if brief["keywords"] else None
 
 
 def _load() -> dict:
@@ -293,21 +297,30 @@ def get(product: dict, refresh: bool = True, max_age_days: int = MAX_AGE_DAYS) -
     if entry:
         try:
             built = datetime.fromisoformat(str(entry.get("built", "")))
-            age = (datetime.now(timezone.utc) - built).days
-            if age < max_age_days:
-                return dict(entry, stale=False)
-        except Exception:
+            age = (datetime.now(timezone.utc) - built).total_seconds() / 86400
+            if built.tzinfo is None:
+                built = built.replace(tzinfo=timezone.utc)
+                age = (datetime.now(timezone.utc) - built).total_seconds() / 86400
+            if 0 <= age < max_age_days:
+                safe = dict(entry)
+                safe["facts"] = []
+                safe["angles"] = []
+                safe["keywords"] = [str(v).strip().lower() for v in entry.get("keywords", []) if str(v).strip()][:8]
+                safe["objections"] = [str(v).strip() for v in entry.get("objections", []) if str(v).strip()][:4]
+                return dict(safe, stale=False)
+        except (TypeError, ValueError, OverflowError):
             pass
     if refresh:
         fresh = build(product)
         if fresh:
             data = _load()
-            data["products"][pid] = fresh
+            data.setdefault("products", {})[pid] = fresh
             data["updated"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
             _save(data)
-            return dict(fresh, stale=False)
-    # network/Gemini failed — serve the stale brief rather than nothing
-    return dict(entry, stale=True) if entry else {}
+            safe = dict(fresh, facts=[], angles=[])
+            return dict(safe, stale=False)
+    # Stale, malformed, future-dated, and unbuilt entries never fall through.
+    return {}
 
 
 def status() -> tuple[int, str]:
@@ -317,7 +330,11 @@ def status() -> tuple[int, str]:
 
 
 def refresh_all(products: list[dict]) -> None:
-    """Rebuild every product's brief (weekly CI / scripts/research_brief.py)."""
+    """Rebuild vocabulary/objective context (weekly CI / research_brief.py).
+
+    Unsupported research claims and generated hook angles are not persisted;
+    only search vocabulary and buyer questions are used by copy generation.
+    """
     data = _load()
     for p in products:
         pid = str(p.get("id") or p.get("name") or "").lower()

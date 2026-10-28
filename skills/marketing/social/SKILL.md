@@ -133,6 +133,12 @@ Keep fragments and lists of three to one per post. For the full blacklist, use t
 
 ---
 
+## Stack & Save affiliate-post requirements
+
+For this repository's generated posts, treat `data/products.csv` as the fact source for every current and future product. Search terms and buyer objections help with language, not proof. Only use researched claims when they have a current verifiable source URL/date and directly support the claim. Never invent metrics, first-person use, outcomes, popularity, urgency, or trial terms.
+
+Use a concise opening that makes a truthful promise, deliver the useful product-specific point quickly, and finish with one link-in-bio action. Do not force a caption length, stuff keywords, ask for empty engagement, or apply synonym substitutions as a “humanizer.” Reels need an immediately legible first frame; carousel covers promise only what the slides deliver. Preserve the existing affiliate disclosure and Instagram five-hashtag maximum. Project-specific final checks live in `../QUALITY_BAR.md`.
+
 ## Content Repurposing System
 
 Turn one piece of content into many. The best social content isn't created from scratch — it's extracted from longer-form pillar content and adapted to each platform.

@@ -120,6 +120,14 @@ Before handing over any draft, run the self-check in [references/ai-tells.md](re
 
 ---
 
+## Stack & Save product-row publishing rules
+
+When writing content for this repo's affiliate engine, use the current product row as the factual boundary. Product names, listed benefits, specs, price, and trial terms can be stated accurately. Cached research keywords and objections are vocabulary/context only; a fact requires a current verifiable source URL/date and product relevance before it can appear as a claim. Apply this to products added later as well as the current catalog.
+
+Do not manufacture personal experience, performance outcomes, savings, customer proof, popularity, urgency, or numbers. Strong writing comes from the reader's specific situation and the exact useful detail the product row supports. Avoid a fixed word-count target, synonym-only humanization, repetitive SEO phrases, and unsupported “human” anecdotes. If evidence is missing, write a narrower, honest line rather than padding it.
+
+For this engine, keep the agreed affiliate disclosure, one link-in-bio CTA, no affiliate URL in the caption, and the five-hashtag cap intact. See the project quality gate in `../QUALITY_BAR.md` for its final checklist.
+
 ## Best Practices
 
 ### Be Direct
