@@ -34,10 +34,11 @@
     "back_by_demand::systeme",
     "back_by_demand::beehiiv",
     "back_by_demand::framer",
-    "back_by_demand::gohighlevel"
+    "back_by_demand::gohighlevel",
+    "back_by_demand::systeme"
   ],
   "product_last": {
-    "systeme": "2026-10-23",
+    "systeme": "2026-10-28",
     "beehiiv": "2026-10-25",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
