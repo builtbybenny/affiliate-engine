@@ -48,43 +48,81 @@ def _raise(payload: dict, status: int) -> IGError:
     return IGError(f"{status} {err.get('type')}: {err.get('message')} (code {err.get('code')})")
 
 
-def _post(path: str, data: dict, retries: tuple[int, ...] = (15, 30, 60)) -> dict:
-    """POST with bounded backoff on the transient Meta errors only."""
+# Two different clocks, so two different ladders. A settling container
+# (9004) clears in seconds, but an exhausted app quota (code 4) clears when
+# the rolling hour moves — the old 15/30/60s ladder gave up after 105 seconds
+# and turned one limited morning into three separate failed runs (2026-10-27
+# and 2026-10-28), each of which then built a fresh set of containers into the
+# same exhausted quota. Code 4 now waits minutes, not seconds.
+_QUOTA_LADDER = (30, 120, 240, 300)      # ~11.5 min total
+_CONTAINER_LADDER = (15, 30, 60)         # settling container / brief blip
+
+
+def _is_quota(err: str) -> bool:
+    low = err.lower()
+    return "request limit" in low or "(code 4)" in low
+
+
+def _ladder(err: str, default: tuple[int, ...]) -> tuple[int, ...]:
+    return _QUOTA_LADDER if _is_quota(err) else default
+
+
+def _post(path: str, data: dict, retries: tuple[int, ...] = _CONTAINER_LADDER) -> dict:
+    """POST with bounded backoff; the ladder widens for an exhausted quota."""
     last: IGError | None = None
-    for attempt in range(len(retries) + 1):
+    plan: tuple[int, ...] = retries
+    for attempt in range(len(plan) + 1):
         r = requests.post(f"{API}/{path}", data=data, timeout=60)
         payload = r.json() if r.headers.get("content-type", "").startswith("application/json") else {"raw": r.text}
         if r.status_code < 400:
             return payload
         last = _raise(payload, r.status_code)
-        if attempt < len(retries) and _retryable(str(last)):
-            print(f"  (IG transient on {path}: {last}); retrying in {retries[attempt]}s")
-            time.sleep(retries[attempt])
+        if plan is retries:
+            plan = _ladder(str(last), retries)
+        if attempt < len(plan) and _retryable(str(last)):
+            print(f"  (IG transient on {path}: {last}); retrying in {plan[attempt]}s")
+            time.sleep(plan[attempt])
             continue
         raise last
     raise last or IGError(f"POST {path} failed")
 
 
 def _get(path: str, params: dict, retries: tuple[int, ...] = (10, 25)) -> dict:
-    """GET with the same transient backoff — status polling hits code 4 too."""
+    """GET with the same backoff — status polling and quota checks hit code 4 too."""
     last: IGError | None = None
-    for attempt in range(len(retries) + 1):
+    plan: tuple[int, ...] = retries
+    for attempt in range(len(plan) + 1):
         r = requests.get(f"{API}/{path}", params=params, timeout=60)
         payload = r.json() if r.headers.get("content-type", "").startswith("application/json") else {"raw": r.text}
         if r.status_code < 400:
             return payload
         last = _raise(payload, r.status_code)
-        if attempt < len(retries) and _retryable(str(last)):
-            print(f"  (IG transient on {path}: {last}); retrying in {retries[attempt]}s")
-            time.sleep(retries[attempt])
+        if plan is retries:
+            plan = _ladder(str(last), retries)
+        if attempt < len(plan) and _retryable(str(last)):
+            print(f"  (IG transient on {path}: {last}); retrying in {plan[attempt]}s")
+            time.sleep(plan[attempt])
             continue
         raise last
     raise last or IGError(f"GET {path} failed")
 
 
-def publish_image(image_url: str, caption: str) -> str:
+def ensure_available() -> None:
+    """One cheap call before any container is created.
+
+    Building a carousel costs one container per slide. Doing that while the
+    app's request quota is already exhausted wastes the whole allowance and
+    leaves orphan containers behind, so ask first and let the quota ladder
+    wait it out. Failure here is fatal for this run — but it fails before
+    spending anything.
+    """
     if not config.IG_USER_ID or not config.ACCESS_TOKEN:
         raise IGError("IG_USER_ID / ACCESS_TOKEN missing. Run scripts/setup_tokens.py first.")
+    _get(config.IG_USER_ID, {"fields": "username", "access_token": config.ACCESS_TOKEN})
+
+
+def publish_image(image_url: str, caption: str) -> str:
+    ensure_available()
     base = {"access_token": config.ACCESS_TOKEN}
     c = _post(f"{config.IG_USER_ID}/media", {**base, "image_url": image_url, "caption": caption})
     pub = _post(f"{config.IG_USER_ID}/media_publish", {**base, "creation_id": c["id"]})
@@ -94,6 +132,7 @@ def publish_image(image_url: str, caption: str) -> str:
 def publish_carousel(image_urls: list[str], caption: str) -> str:
     if not 2 <= len(image_urls) <= 10:
         raise IGError("Carousel needs 2-10 images.")
+    ensure_available()
     base = {"access_token": config.ACCESS_TOKEN}
     children: list[str] = []
     for url in image_urls:
@@ -134,6 +173,7 @@ def publish_carousel(image_urls: list[str], caption: str) -> str:
 
 
 def publish_reel(video_url: str, caption: str, share_to_feed: bool = True) -> str:
+    ensure_available()
     base = {"access_token": config.ACCESS_TOKEN}
     c = _post(
         f"{config.IG_USER_ID}/media",

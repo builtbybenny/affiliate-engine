@@ -197,9 +197,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f docs/media
-          # X posting queue (make_x_queue.py mirrors public/x into docs/x;
-          # without this line the INDEX stays local until the next manual push)
-          if [ -d docs/x ]; then git add -f docs/x; fi
           git commit -m "media: ${{ steps.slot.outputs.format }} $(date -u +%FT%HZ)" || echo "nothing to commit"
           git push
 
@@ -246,19 +243,13 @@ jobs:
         if: steps.slot.outputs.run == 'true'
         run: python scripts/publish.py --today --format ${{ steps.slot.outputs.format }}
 
-      - name: Build today's X queue entry + mirror to docs/x
-        if: steps.slot.outputs.run == 'true'
-        run: python scripts/make_x_queue.py
-
-      - name: Commit publish log + rotation memory + X queue (so later triggers see
-        # today's post, LRU product rotation learns from CI posts, and the X
-        # posting queue grows one entry per publish instead of falling behind)
+      - name: Commit publish log + rotation memory (so later triggers see
+        # today's post and the LRU product rotation learns from CI posts)
         if: steps.slot.outputs.run == 'true'
         run: |
           git add data/published_log.csv data/concept_history.json data/research_briefs.json
           # media/music reuse memory (only exists once a reel has rendered)
           git add data/asset_history.json 2>/dev/null || true
-          git add -f docs/x
-          git commit -m "log: published $(date -u +%FT%HZ) + rotation state + X queue" || echo "no changes"
+          git commit -m "log: published $(date -u +%FT%HZ) + rotation state" || echo "no changes"
           git pull --rebase origin main || true
           git push

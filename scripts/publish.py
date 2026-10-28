@@ -48,13 +48,46 @@ def load_plan(for_date: _date, fmt: str) -> dict:
     return {"product_id": "", "concept": fmt, "is_rerun": False}
 
 
+_LOG_HEADER = ["date", "format", "product_id", "ig_media_id", "fb_post_id", "yt_video_id", "media_urls"]
+
+
+def _log_rows() -> list[list[str]]:
+    """Rows of the publish log with any header/blank lines removed.
+
+    The log used to grow a fresh header every time its first line looked old,
+    which left header rows stranded between data rows (2026-10-28). Readers
+    key on date/format so nothing broke, but one canonical header keeps every
+    consumer — guard, insights, weekly review — honest.
+    """
+    if not config.PUBLISHED_LOG.exists():
+        return []
+    rows: list[list[str]] = []
+    with open(config.PUBLISHED_LOG, newline="", encoding="utf-8") as f:
+        for row in csv.reader(f):
+            if not row or row[:2] == _LOG_HEADER[:2]:
+                continue
+            rows.append((row + [""] * len(_LOG_HEADER))[: len(_LOG_HEADER)])
+    return rows
+
+
 def log_published(for_date: _date, fmt: str, product_id: str, ig_id: str, fb_id: str, urls: list[str], yt_id: str = "") -> None:
-    new = not (config.PUBLISHED_LOG.exists() and "yt_video_id" in config.PUBLISHED_LOG.read_text(encoding="utf-8").splitlines()[0])
-    with open(config.PUBLISHED_LOG, "a", newline="", encoding="utf-8") as f:
+    rows = _log_rows()
+    rows.append([for_date.isoformat(), fmt, product_id, ig_id, fb_id, yt_id, "|".join(urls)])
+    with open(config.PUBLISHED_LOG, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        if new:
-            w.writerow(["date", "format", "product_id", "ig_media_id", "fb_post_id", "yt_video_id", "media_urls"])
-        w.writerow([for_date.isoformat(), fmt, product_id, ig_id, fb_id, yt_id, "|".join(urls)])
+        w.writerow(_LOG_HEADER)
+        w.writerows(rows)
+
+
+def already_published(for_date: _date, fmt: str) -> bool:
+    """True when this slot already has a live post.
+
+    Retries are the reason this exists: each scheduled trigger re-renders and
+    would happily publish a second carousel for the same day, spending the
+    app's request quota on a duplicate.
+    """
+    target = for_date.isoformat()
+    return any(row[0] == target and row[1] == fmt for row in _log_rows())
 
 
 def latest_render(fmt: str) -> Path | None:
@@ -147,7 +180,11 @@ def _served_as_media(url: str) -> bool:
         return False
 
 
-def publish(fmt: str, for_date: _date, dry_run: bool, targets: set[str]) -> None:
+def publish(fmt: str, for_date: _date, dry_run: bool, targets: set[str],
+             force: bool = False) -> None:
+    if not dry_run and not force and already_published(for_date, fmt):
+        print(f"[{fmt}] {for_date} is already published — nothing to do (use --force to override)")
+        return
     products = planner.load_products()
     plan = load_plan(for_date, fmt)
     product = (
@@ -257,6 +294,7 @@ def main() -> None:
     ap.add_argument("--fb-only", action="store_true")
     ap.add_argument("--yt-only", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--force", action="store_true", help="publish even if this slot is already logged")
     args = ap.parse_args()
 
     for_date = (
@@ -270,14 +308,14 @@ def main() -> None:
     )
 
     if args.format:
-        publish(args.format, for_date, args.dry_run, targets)
+        publish(args.format, for_date, args.dry_run, targets, force=args.force)
     else:
         day_entries = config.WEEKLY_CALENDAR.get(for_date.strftime("%a").lower(), [])
         fmts = [f for f, _ in day_entries] or ["carousel"]
         if args.latest:
             fmts = ["carousel" if latest_render("carousel") else "reel"]
         for fmt in fmts:
-            publish(fmt, for_date, args.dry_run, targets)
+            publish(fmt, for_date, args.dry_run, targets, force=args.force)
 
 
 if __name__ == "__main__":

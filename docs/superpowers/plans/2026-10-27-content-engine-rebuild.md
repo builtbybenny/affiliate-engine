@@ -107,3 +107,44 @@ per-product mapping, unknown product, dry-run, ranking, hook-kind classification
 digest-never-quotes via 6-gram overlap, API failure, fetch-once + prompt wiring), plus a
 live digest for both products and a live accepted draft produced with the signal in the
 prompt.
+
+## Publish path hardening + X removal (2026-10-28)
+
+**Evidence, not guessing.** The failure emails were read from the actual GitHub Actions
+logs. Two causes, not one:
+
+| Cause | When | Status |
+|---|---|---|
+| `9004 Only photo or video` — Pages had not deployed the slide yet | 10-27 12:50, 10-28 12:59 | Fixed by `d99bd99`, which had never been pushed until today's merge |
+| `code 4 Application request limit reached` — Meta app quota exhausted | 10-27 13:33, 10-28 13:27 + 13:39 | Fixed here |
+
+**Why code 4 kept happening.** A carousel costs one container per slide (nine for the
+deck that failed). Each failing call was retried three times, so one bad attempt could
+spend ~36 calls, and the later triggers built a brand-new set of containers into the same
+exhausted quota. The 15/30/60-second ladder retried for 105 seconds, which cannot outlast
+a limit that resets on a rolling hour — so all three morning triggers failed and sent a
+mail each.
+
+**Fixes.** `ensure_available()` asks one cheap question before any container exists, so an
+exhausted quota costs one call and leaves no orphan containers. A quota-specific ladder
+(30/120/240/300s, ~11.5 min) replaces the short one when the error is code 4, while
+settling containers keep the fast ladder. Auth and permission errors still fail
+immediately rather than burning a window.
+
+**Retries can no longer double-post.** `already_published(date, format)` makes a repeat
+run a no-op (`--force` overrides), which is what the one-post-per-day guard relied on
+scheduling to provide.
+
+**Publish log.** `log_published()` appended a fresh header whenever line one looked old,
+leaving 24 stranded header rows between data rows. It now rewrites one canonical header
+and pads legacy short rows; 36 data rows preserved.
+
+**X removed.** `scripts/make_x_queue.py`, `docs/x`, `public/x`, the queue step and both
+`git add -f docs/x` lines are gone. X was never automated (the queue was a manual
+copy-paste aid), so no posting logic had to be unwound; Instagram and Facebook publishing,
+cadence and cron slots are untouched.
+
+**Verification.** 36 offline tests (7 new: log repair, row padding, slot-scoped
+idempotency, skip-without-rendering, quota ladder, retryability, preflight), `compileall`,
+`scheduler.yml` parses as YAML with 14 steps and no X references, dry runs for carousel and
+reel, and a live single-call API check confirming the token still answers.
