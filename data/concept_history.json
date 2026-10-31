@@ -18,11 +18,12 @@
     "quick_win::beehiiv",
     "cost_of_waiting::systeme",
     "day_in_life::beehiiv",
-    "objection_crusher::systeme"
+    "objection_crusher::systeme",
+    "before_after::beehiiv"
   ],
   "product_last": {
     "systeme": "2026-10-31",
-    "beehiiv": "2026-10-31",
+    "beehiiv": "2026-11-01",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
     "pictory": "2026-10-09",
@@ -33,6 +34,7 @@
     "quick_win::beehiiv": "2026-10-29",
     "cost_of_waiting::systeme": "2026-10-30",
     "day_in_life::beehiiv": "2026-10-31",
-    "objection_crusher::systeme": "2026-10-31"
+    "objection_crusher::systeme": "2026-10-31",
+    "before_after::beehiiv": "2026-11-01"
   }
 }
