@@ -16,11 +16,12 @@
     "social_proof_drop::framer",
     "social_proof_drop::gohighlevel",
     "quick_win::beehiiv",
-    "cost_of_waiting::systeme"
+    "cost_of_waiting::systeme",
+    "day_in_life::beehiiv"
   ],
   "product_last": {
     "systeme": "2026-10-30",
-    "beehiiv": "2026-10-29",
+    "beehiiv": "2026-10-31",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
     "pictory": "2026-10-09",
@@ -29,6 +30,7 @@
   },
   "concept_last": {
     "quick_win::beehiiv": "2026-10-29",
-    "cost_of_waiting::systeme": "2026-10-30"
+    "cost_of_waiting::systeme": "2026-10-30",
+    "day_in_life::beehiiv": "2026-10-31"
   }
 }
