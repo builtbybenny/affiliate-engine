@@ -1,22 +1,23 @@
 {
-  "updated": "2026-10-25T03:20:33+00:00",
+  "updated": "2026-11-01T03:36:38+00:00",
   "products": {
     "systeme": {
       "keywords": [
-        "best email newsletter tools",
-        "send newsletters for free",
+        "best free email marketing software",
         "free sales funnel builder",
+        "send newsletters for free",
+        "kajabi alternative free",
         "all in one marketing platform",
-        "kajabi free alternative",
-        "sell courses online for free",
-        "free email marketing software"
+        "create online course for free"
       ],
+      "facts": [],
       "objections": [
-        "Can a completely free plan actually run my business without hidden fees?",
-        "Will my emails end up in the spam folder on a free system?",
-        "Is moving my funnels and email list going to take days of tech work?"
+        "Is the free plan actually usable or just a trap to force me to upgrade?",
+        "Will I get hit with hidden transaction fees on my course sales?",
+        "Is it too hard to move my existing email list over?"
       ],
-      "built": "2026-10-25T03:18:53+00:00",
+      "angles": [],
+      "built": "2026-11-01T03:36:17+00:00",
       "sources": {
         "headlines": 24,
         "articles": 5
@@ -26,17 +27,19 @@
       "keywords": [
         "best email newsletter tools",
         "send newsletters for free",
-        "beehiiv vs mailchimp",
-        "newsletter growth platform",
-        "free newsletter software",
+        "beehiiv vs substack",
+        "how to start a newsletter",
+        "free newsletter platforms",
         "monetize email newsletter"
       ],
+      "facts": [],
       "objections": [
-        "Will my monthly bill jump drastically the second my subscriber list grows?",
-        "Is it actually difficult to switch over from Mailchimp without losing my templates?",
-        "Do I really need built-in 3D analytics if I just want to send a basic weekly email?"
+        "Will the platform get too expensive once my subscriber count hits 10,000?",
+        "Is it hard to move my existing subscriber list over without losing people?",
+        "Will my free readers ever actually convert into paying members?"
       ],
-      "built": "2026-10-25T03:20:29+00:00",
+      "angles": [],
+      "built": "2026-11-01T03:36:38+00:00",
       "sources": {
         "headlines": 24,
         "articles": 5
