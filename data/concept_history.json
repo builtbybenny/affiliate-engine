@@ -21,11 +21,12 @@
     "objection_crusher::systeme",
     "before_after::beehiiv",
     "mistake_angle::systeme",
-    "before_after::systeme"
+    "before_after::systeme",
+    "mistake_angle::beehiiv"
   ],
   "product_last": {
     "systeme": "2026-11-02",
-    "beehiiv": "2026-11-01",
+    "beehiiv": "2026-11-03",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
     "pictory": "2026-10-09",
@@ -39,6 +40,7 @@
     "objection_crusher::systeme": "2026-10-31",
     "before_after::beehiiv": "2026-11-01",
     "mistake_angle::systeme": "2026-11-01",
-    "before_after::systeme": "2026-11-02"
+    "before_after::systeme": "2026-11-02",
+    "mistake_angle::beehiiv": "2026-11-03"
   }
 }
