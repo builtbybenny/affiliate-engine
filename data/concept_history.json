@@ -25,11 +25,12 @@
     "mistake_angle::beehiiv",
     "workflow_gap::systeme",
     "cost_of_waiting::beehiiv",
-    "hidden_feature::systeme"
+    "hidden_feature::systeme",
+    "objection_crusher::beehiiv"
   ],
   "product_last": {
     "systeme": "2026-11-06",
-    "beehiiv": "2026-11-05",
+    "beehiiv": "2026-11-07",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
     "pictory": "2026-10-09",
@@ -47,6 +48,7 @@
     "mistake_angle::beehiiv": "2026-11-03",
     "workflow_gap::systeme": "2026-11-04",
     "cost_of_waiting::beehiiv": "2026-11-05",
-    "hidden_feature::systeme": "2026-11-06"
+    "hidden_feature::systeme": "2026-11-06",
+    "objection_crusher::beehiiv": "2026-11-07"
   }
 }
