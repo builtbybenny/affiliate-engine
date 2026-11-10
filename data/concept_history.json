@@ -30,10 +30,11 @@
     "price_transparency::systeme",
     "quick_win::systeme",
     "myth_crusher::beehiiv",
-    "hidden_feature::beehiiv"
+    "hidden_feature::beehiiv",
+    "day_in_life::systeme"
   ],
   "product_last": {
-    "systeme": "2026-11-08",
+    "systeme": "2026-11-11",
     "beehiiv": "2026-11-09",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
@@ -57,6 +58,7 @@
     "price_transparency::systeme": "2026-11-07",
     "quick_win::systeme": "2026-11-08",
     "myth_crusher::beehiiv": "2026-11-08",
-    "hidden_feature::beehiiv": "2026-11-09"
+    "hidden_feature::beehiiv": "2026-11-09",
+    "day_in_life::systeme": "2026-11-11"
   }
 }
