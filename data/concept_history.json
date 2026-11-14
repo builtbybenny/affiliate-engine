@@ -34,10 +34,11 @@
     "day_in_life::systeme",
     "workflow_gap::beehiiv",
     "hidden_feature::systeme",
-    "objection_crusher::beehiiv"
+    "objection_crusher::beehiiv",
+    "stack_drop::systeme"
   ],
   "product_last": {
-    "systeme": "2026-11-13",
+    "systeme": "2026-11-14",
     "beehiiv": "2026-11-14",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
@@ -63,6 +64,7 @@
     "myth_crusher::beehiiv": "2026-11-08",
     "hidden_feature::beehiiv": "2026-11-09",
     "day_in_life::systeme": "2026-11-11",
-    "workflow_gap::beehiiv": "2026-11-12"
+    "workflow_gap::beehiiv": "2026-11-12",
+    "stack_drop::systeme": "2026-11-14"
   }
 }
