@@ -1,29 +1,5 @@
 {
   "items": {
-    "metaquietlylaunchesanaifashionappcalledstylesketch": {
-      "title": "Meta quietly launches an AI fashion app called Style Sketch",
-      "link": "https://techcrunch.com/2026/10/29/meta-quietly-launches-an-ai-fashion-app-called-style-sketch/",
-      "desc": "The app connects to Instagram to build a virtual closet from photos you\u2019ve already shared, or lets you add items manually by snapping a photo, recording a quick video, or uploading images from your camera roll.",
-      "score": 8,
-      "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
-    },
-    "asaiagentsreshapethewebgoogleopensgeminiandsearchtomoreapps": {
-      "title": "As AI agents reshape the web, Google opens Gemini and Search to more apps",
-      "link": "https://techcrunch.com/2026/10/28/as-ai-agents-reshape-the-web-google-opens-gemini-and-search-to-more-apps/",
-      "desc": "A new developer platform will let businesses bring their services to Google's AI experiences, potentially changing how consumers discover and use apps.",
-      "score": 7,
-      "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
-    },
-    "metahasanewaipetappcalledwaddleworld": {
-      "title": "Meta has a new AI pet app called Waddle World",
-      "link": "https://techcrunch.com/2026/10/28/meta-has-a-new-ai-pet-app-called-waddle-world/",
-      "desc": "Meta launched a new app called Waddle World, which essentially looks like a Tamagotchi clone, but with AI.",
-      "score": 7,
-      "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
-    },
     "applewatchsaifeaturesforrewindingandrecappingconversationsbeginbetatesting": {
       "title": "Apple Watch\u2019s AI features for rewinding and recapping conversations begin beta testing",
       "link": "https://techcrunch.com/2026/11/02/apple-watchs-ai-features-for-rewinding-and-recapping-conversations-begin-beta-testing/",
@@ -32,13 +8,13 @@
       "source": "techcrunch",
       "seen": "2026-11-08T09:38:27+00:00"
     },
-    "granolacrunchesupadictationfeaturetocompetewithwispr": {
-      "title": "Granola crunches up a dictation feature to compete with Wispr",
-      "link": "https://techcrunch.com/2026/10/29/granola-crunches-up-a-dictation-feature-to-compete-with-wispr/",
-      "desc": "Uno reverse! After Wispr added meeting notes to its dictation app, Granola is adding dictation to its meeting notetaker. The voice AI wars are getting interesting.",
-      "score": 6,
+    "newwhatsappheadwantstomaketheappeasiertousegiveitsaimorechops": {
+      "title": "New WhatsApp head wants to make the app easier to use, give its AI more chops",
+      "link": "https://techcrunch.com/2026/11/10/new-whatsapp-head-wants-to-make-the-app-easier-to-use-give-its-ai-more-chops/",
+      "desc": "Kunal Shah said the company wants to make voice notes, groups, stickers, and video \"simpler and more expressive.\"",
+      "score": 7,
       "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
+      "seen": "2026-11-15T10:01:09+00:00"
     },
     "snapchatsurpasses30mpaidsubscribers": {
       "title": "Snapchat surpasses 30M paid subscribers",
@@ -56,29 +32,21 @@
       "source": "hn-front",
       "seen": "2026-11-08T09:38:33+00:00"
     },
-    "wabitheaiagentthatbuildsminiappsnowvaluedat125bafterlatestround": {
-      "title": "Wabi, the AI agent that builds mini apps, now valued at $1.25B after latest round",
-      "link": "https://techcrunch.com/2026/10/29/wabi-the-ai-agent-that-builds-mini-apps-now-valued-at-1-25b-after-latest-round/",
-      "desc": "On Thursday, AI app Wabi, now describing itself as a \"personal agent,\" said it has raised $55 million at a $1.25 billion valuation.",
-      "score": 5,
+    "musecannowplacecallstousbusinessesifyoupay": {
+      "title": "Muse can now place calls to US businesses \u2014 if you pay",
+      "link": "https://techcrunch.com/2026/11/12/muse-can-now-place-calls-to-u-s-businesses-if-you-pay/",
+      "desc": "Muse's AI can now place outbound calls to U.S. businesses \u2014 but it's not free.",
+      "score": 6,
       "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
+      "seen": "2026-11-15T10:01:09+00:00"
     },
-    "freefirereturnstoindiaasgarenalauncheslocalizedversionfouryearsafterban": {
-      "title": "Free Fire returns to India as Garena launches localized version four years after ban",
-      "link": "https://techcrunch.com/2026/10/28/free-fire-returns-to-india-as-garena-launches-localized-version-four-years-after-ban/",
-      "desc": "Free Fire India was originally set to launch in September 2023, but Garena postponed its release.",
-      "score": 5,
+    "mediumsnewtkappbringsaiassistancedirectlyintothewritingprocess": {
+      "title": "Medium\u2019s new TK app brings AI assistance directly into the writing process",
+      "link": "https://techcrunch.com/2026/11/09/mediums-new-tk-app-brings-ai-assistance-directly-into-the-writing-process/",
+      "desc": "Medium's new writing app embraces AI-assisted writing, despite growing controversy over the technology's role in publishing.",
+      "score": 6,
       "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
-    },
-    "applerollsoutios272withnewsiriailanguagesandsecurityfixes": {
-      "title": "Apple rolls out iOS 27.2 with new Siri AI languages and security fixes",
-      "link": "https://techcrunch.com/2026/10/27/apple-rolls-out-ios-27-2-with-new-siri-ai-languages-and-security-fixes/",
-      "desc": "The latest Apple software update for iPhones and iPads includes new features and important security updates.",
-      "score": 5,
-      "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
+      "seen": "2026-11-15T10:01:09+00:00"
     },
     "theduoappsarecomingsaysapple": {
       "title": "The Duo apps are coming, says Apple",
@@ -136,29 +104,53 @@
       "source": "techcrunch",
       "seen": "2026-11-08T09:38:27+00:00"
     },
-    "andyjassysaysprimevideoisontracktoearntensofbillionsofdollars": {
-      "title": "Andy Jassy says Prime Video is on track to earn \u2018tens of billions of dollars\u2019",
-      "link": "https://techcrunch.com/2026/10/29/andy-jassy-says-prime-video-is-on-track-to-earn-tens-of-billions-of-dollars/",
-      "desc": "The success of blockbuster hits like \"Project Hail Mary\" and \"Verity\" is only part of the story, Amazon's CEO says.",
-      "score": 4,
+    "elevenlabsnewappcombinesmeetingnotetakinganddictationforteams": {
+      "title": "ElevenLabs\u2019 new app combines meeting note-taking and dictation for teams",
+      "link": "https://techcrunch.com/2026/11/13/elevenlabs-new-app-combines-meeting-note-taking-and-dictation-for-teams/",
+      "desc": "ElevenAI is a new meeting notetaker and dictation app aimed at teams and enterprises.",
+      "score": 5,
       "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
+      "seen": "2026-11-15T10:01:09+00:00"
     },
-    "assearchtrafficdriesupredditannouncesitsshiftingtoaloggedinexperience": {
-      "title": "As search traffic dries up, Reddit announces it\u2019s shifting to a logged-in experience",
-      "link": "https://techcrunch.com/2026/10/29/as-search-traffic-dries-up-reddit-announces-its-shifting-to-a-logged-in-experience/",
-      "desc": "As AI transforms how people find information online, Reddit is rethinking its open-web roots to protect its audience and business.",
-      "score": 4,
+    "photalabsusesaitoturneverydayphotosintoprofessionallookingshots": {
+      "title": "Phota Labs uses AI to turn everyday photos into professional-looking shots",
+      "link": "https://techcrunch.com/2026/11/12/phota-labs-uses-ai-to-turn-everyday-photos-into-professional-looking-shots/",
+      "desc": "Rather than giving consumers yet another photo-editing tool, Phota Labs aims to use advances in AI to automate the editing process so it\u2019s easier for anyone to turn everyday moments into better photos.",
+      "score": 5,
       "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
+      "seen": "2026-11-15T10:01:09+00:00"
     },
-    "chromesaipoweredautofillcannowdigthroughyourgmailtofilloutforms": {
-      "title": "Chrome\u2019s AI-powered Autofill can now dig through your Gmail to fill out forms",
-      "link": "https://techcrunch.com/2026/10/28/chromes-ai-powered-autofill-can-now-dig-through-your-gmail-to-fill-out-forms/",
-      "desc": "The autofill update lets Chrome pull flight confirmations, tracking info, order details, and other information from your inbox, with your permission.",
-      "score": 4,
+    "sundropturnsyourendlessbabyphotosintorecapstimelapsesandmorewithoutai": {
+      "title": "Sundrop turns your endless baby photos into recaps, time lapses, and more \u2014 without AI",
+      "link": "https://techcrunch.com/2026/11/10/sundrop-turns-your-endless-baby-photos-into-recaps-time-lapses-and-more-without-ai/",
+      "desc": "Sundrop is a new iPhone app that uses Apple's on-device AI to help parents rediscover their favorite photos and create keepsakes without uploading images to the cloud.",
+      "score": 5,
       "source": "techcrunch",
-      "seen": "2026-11-01T03:34:17+00:00"
+      "seen": "2026-11-15T10:01:09+00:00"
+    },
+    "metasaiagentmuselandsonapplewatchandandroidwearos": {
+      "title": "Meta\u2019s AI agent Muse lands on Apple Watch and Android Wear OS",
+      "link": "https://techcrunch.com/2026/11/10/metas-ai-agent-muse-lands-on-apple-watch-and-wear-os/",
+      "desc": "Users can now interact with Meta\u2019s AI assistant through voice calls, text messages, or dictation on their Apple Watch.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-11-15T10:01:09+00:00"
+    },
+    "automatticdebutsaplatformtodeployvibecodingappsamidachanginginternet": {
+      "title": "Automattic debuts a platform to deploy vibe-coding apps amid a changing internet",
+      "link": "https://techcrunch.com/2026/11/09/automattic-debuts-a-platform-to-deploy-vibe-coding-apps-amid-a-changing-internet/",
+      "desc": "Automattic aims to compete with the likes of Lovable with Spacefast.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-11-15T10:01:09+00:00"
+    },
+    "lovableappsexposepassportdetailsandmorethan200kprivatemessages": {
+      "title": "Lovable apps expose passport details and more than 200K private messages",
+      "link": "https://www.crissyfield.de/research/lovable-en/",
+      "desc": "Article URL: https://www.crissyfield.de/research/lovable-en/\nComments URL: https://news.ycombinator.com/item?id=50499017\nPoints: 810\n# Comments: 314",
+      "score": 5,
+      "source": "hn-front",
+      "seen": "2026-11-15T10:01:14+00:00"
     },
     "zapfastafastnativewhatsappclientinrustandegui": {
       "title": "ZapFast: A fast, native WhatsApp client in Rust and egui",
@@ -167,7 +159,31 @@
       "score": 4,
       "source": "hn-front",
       "seen": "2026-11-08T09:38:33+00:00"
+    },
+    "gotemail": {
+      "title": "GotEmail",
+      "link": "https://www.producthunt.com/products/gotemail",
+      "desc": "",
+      "score": 4,
+      "source": "producthunt",
+      "seen": "2026-11-15T10:01:09+00:00"
+    },
+    "microsoftslatestemailoutageturnedintoafullblownglobalcloudcrisis": {
+      "title": "Microsoft\u2019s latest email outage turned into a full-blown global cloud crisis",
+      "link": "https://techcrunch.com/2026/11/13/microsoft-latest-email-outage-turned-into-a-full-blown-global-cloud-crisis/",
+      "desc": "Microsoft's daylong outage began with Outlook and Teams and ended up taking much of the company's cloud services offline. Microsoft says it's gradually restoring service.",
+      "score": 4,
+      "source": "techcrunch",
+      "seen": "2026-11-15T10:01:09+00:00"
+    },
+    "anthropiclaunchesclaudemeetingstoturnworkplacediscussionsintoplansandtasks": {
+      "title": "Anthropic launches Claude Meetings to turn workplace discussions into plans and tasks",
+      "link": "https://techcrunch.com/2026/11/10/anthropic-launches-claude-meetings-to-turn-workplace-discussions-into-plans-and-tasks/",
+      "desc": "As participants talk, Claude can draft the plan being discussed, map out a timeline on a whiteboard, answer questions in the meeting chat, and access connected work apps to retrieve information, such as last year's figures.",
+      "score": 4,
+      "source": "techcrunch",
+      "seen": "2026-11-15T10:01:09+00:00"
     }
   },
-  "last_run": "2026-11-08T09:38:33+00:00"
+  "last_run": "2026-11-15T10:01:14+00:00"
 }
