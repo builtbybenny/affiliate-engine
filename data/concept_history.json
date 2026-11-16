@@ -37,11 +37,12 @@
     "objection_crusher::beehiiv",
     "stack_drop::systeme",
     "before_after::beehiiv",
-    "workflow_gap::systeme"
+    "workflow_gap::systeme",
+    "hidden_feature::beehiiv"
   ],
   "product_last": {
     "systeme": "2026-11-16",
-    "beehiiv": "2026-11-15",
+    "beehiiv": "2026-11-17",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
     "pictory": "2026-10-09",
@@ -64,7 +65,7 @@
     "price_transparency::systeme": "2026-11-07",
     "quick_win::systeme": "2026-11-08",
     "myth_crusher::beehiiv": "2026-11-08",
-    "hidden_feature::beehiiv": "2026-11-09",
+    "hidden_feature::beehiiv": "2026-11-17",
     "day_in_life::systeme": "2026-11-11",
     "workflow_gap::beehiiv": "2026-11-12",
     "stack_drop::systeme": "2026-11-14"
