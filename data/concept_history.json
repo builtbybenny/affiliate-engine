@@ -42,10 +42,11 @@
     "cost_of_waiting::systeme",
     "before_after::beehiiv",
     "quick_win::systeme",
-    "cost_of_waiting::beehiiv"
+    "cost_of_waiting::beehiiv",
+    "hidden_feature::systeme"
   ],
   "product_last": {
-    "systeme": "2026-11-20",
+    "systeme": "2026-11-22",
     "beehiiv": "2026-11-21",
     "notion": "2026-10-02",
     "canva": "2026-10-03",
@@ -64,7 +65,7 @@
     "mistake_angle::beehiiv": "2026-11-03",
     "workflow_gap::systeme": "2026-11-16",
     "cost_of_waiting::beehiiv": "2026-11-21",
-    "hidden_feature::systeme": "2026-11-13",
+    "hidden_feature::systeme": "2026-11-22",
     "objection_crusher::beehiiv": "2026-11-14",
     "price_transparency::systeme": "2026-11-07",
     "quick_win::systeme": "2026-11-20",
