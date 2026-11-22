@@ -1,13 +1,5 @@
 {
   "items": {
-    "applewatchsaifeaturesforrewindingandrecappingconversationsbeginbetatesting": {
-      "title": "Apple Watch\u2019s AI features for rewinding and recapping conversations begin beta testing",
-      "link": "https://techcrunch.com/2026/11/02/apple-watchs-ai-features-for-rewinding-and-recapping-conversations-begin-beta-testing/",
-      "desc": "Now in beta: Apple's new Audio Intelligence features can help you remember what someone said or take notes on conversations.",
-      "score": 7,
-      "source": "techcrunch",
-      "seen": "2026-11-08T09:38:27+00:00"
-    },
     "newwhatsappheadwantstomaketheappeasiertousegiveitsaimorechops": {
       "title": "New WhatsApp head wants to make the app easier to use, give its AI more chops",
       "link": "https://techcrunch.com/2026/11/10/new-whatsapp-head-wants-to-make-the-app-easier-to-use-give-its-ai-more-chops/",
@@ -16,21 +8,29 @@
       "source": "techcrunch",
       "seen": "2026-11-15T10:01:09+00:00"
     },
-    "snapchatsurpasses30mpaidsubscribers": {
-      "title": "Snapchat surpasses 30M paid subscribers",
-      "link": "https://techcrunch.com/2026/11/04/snapchat-surpasses-30m-paid-subscribers/",
-      "desc": "The milestone comes a year after Snapchat announced a controversial limit on free storage for its Memories feature and informed users it would start requiring users to pay $1.99 per month for additional storage or subscribe to Snapchat+ to retain their Memories.",
-      "score": 6,
+    "metalaunchesdirectastandalonemessagingappforinstagram": {
+      "title": "Meta launches Direct, a stand-alone messaging app for Instagram",
+      "link": "https://techcrunch.com/2026/11/17/meta-launches-direct-a-standalone-messaging-app-for-instagram/",
+      "desc": "Direct is launching in Turkey and Thailand, and can be used with or without an Instagram account.",
+      "score": 7,
       "source": "techcrunch",
-      "seen": "2026-11-08T09:38:27+00:00"
+      "seen": "2026-11-22T10:26:17+00:00"
     },
-    "claudecodesdontaskagainexposespasswordsin1122publicgithubfiles": {
-      "title": "Claude Code's \"Don't Ask Again\" exposes passwords in 1,122 public GitHub files",
-      "link": "https://apiiro.com/blog/coding-agents-leaking-secrets-github-dont-ask-again",
-      "desc": "Article URL: https://apiiro.com/blog/coding-agents-leaking-secrets-github-dont-ask-again\nComments URL: https://news.ycombinator.com/item?id=50407882\nPoints: 383\n# Comments: 264",
-      "score": 6,
-      "source": "hn-front",
-      "seen": "2026-11-08T09:38:33+00:00"
+    "instagramsnewtoolforcreatorstargetsunauthorizedrepostsandaimodifiedvideos": {
+      "title": "Instagram\u2019s new tool for creators targets unauthorized reposts and AI-modified videos",
+      "link": "https://techcrunch.com/2026/11/17/instagrams-new-tool-for-creators-targets-unauthorized-reposts-and-ai-modified-videos/",
+      "desc": "The announcement likely comes in response to creators' concerns over how easily original content can be copied and redistributed across social media platforms, especially considering how generative AI has made it easier to manipulate existing videos.",
+      "score": 7,
+      "source": "techcrunch",
+      "seen": "2026-11-22T10:26:17+00:00"
+    },
+    "applerevealsnewmacsecuritycontrolsasaiagentsraiseprivacyrisks": {
+      "title": "Apple reveals new Mac security controls as AI agents raise privacy risks",
+      "link": "https://techcrunch.com/2026/11/16/apple-reveals-new-mac-security-controls-as-ai-agents-raise-privacy-risks/",
+      "desc": "Following an October announcement, Apple has detailed new permission controls, warnings, and transparency features coming to macOS 27.3 to address risks posed by AI agents and other apps.",
+      "score": 7,
+      "source": "techcrunch",
+      "seen": "2026-11-22T10:26:17+00:00"
     },
     "musecannowplacecallstousbusinessesifyoupay": {
       "title": "Muse can now place calls to US businesses \u2014 if you pay",
@@ -48,61 +48,13 @@
       "source": "techcrunch",
       "seen": "2026-11-15T10:01:09+00:00"
     },
-    "theduoappsarecomingsaysapple": {
-      "title": "The Duo apps are coming, says Apple",
-      "link": "https://techcrunch.com/2026/11/06/the-duo-apps-are-coming-says-apple/",
-      "desc": "There are now 100,000 Duo-optimized apps, says Apple, and thousands more arrive daily.",
-      "score": 5,
+    "spotifysnewtoolaimstostopdeepfakesfrombeingattributedtorealartists": {
+      "title": "Spotify\u2019s new tool aims to stop deepfakes from being attributed to real artists",
+      "link": "https://techcrunch.com/2026/11/17/spotifys-new-tool-aims-to-stop-deepfakes-from-being-attributed-to-real-artists/",
+      "desc": "The update comes as Billboard reported last month that Sony Music had requested the removal of more than 260,000 deepfake songs from digital platforms, nearly double the number the label disclosed in March.",
+      "score": 6,
       "source": "techcrunch",
-      "seen": "2026-11-08T09:38:27+00:00"
-    },
-    "claudecannowanalyzeyourspendingwithitsnewpersonalfinancetool": {
-      "title": "Claude can now analyze your spending with its new Personal Finance tool",
-      "link": "https://techcrunch.com/2026/11/05/claude-can-now-analyze-your-spending-with-its-new-personal-finance-tool/",
-      "desc": "With Personal Finance in Claude, users can connect their bank and card accounts through Plaid and ask questions about their finances.",
-      "score": 5,
-      "source": "techcrunch",
-      "seen": "2026-11-08T09:38:27+00:00"
-    },
-    "tiktokquietlylaunchesastandalonetiktokshopapp": {
-      "title": "TikTok quietly launches a stand-alone TikTok Shop app",
-      "link": "https://techcrunch.com/2026/11/05/tiktok-quietly-launches-a-standalone-tiktok-shop-app/",
-      "desc": "The app will offer personalized product recommendations, shopping through livestreams and short-form videos, app-exclusive deals, in-app checkout, order tracking, and customer support.",
-      "score": 5,
-      "source": "techcrunch",
-      "seen": "2026-11-08T09:38:27+00:00"
-    },
-    "instagrambringseditstodesktoptotakeoncapcut": {
-      "title": "Instagram brings Edits to desktop to take on CapCut",
-      "link": "https://techcrunch.com/2026/11/05/instagram-brings-edits-to-desktop-to-take-on-capcut/",
-      "desc": "The move puts Edits in more direct competition with ByteDance's CapCut, the video-editing app Meta sought to challenge when it launched Edits last year.",
-      "score": 5,
-      "source": "techcrunch",
-      "seen": "2026-11-08T09:38:27+00:00"
-    },
-    "itriedapplessirirecapstheyresurprisinglyusefulandalittleunsettling": {
-      "title": "I tried Apple\u2019s Siri Recaps. They\u2019re surprisingly useful \u2014 and a little unsettling",
-      "link": "https://techcrunch.com/2026/11/04/i-tried-apples-siri-recaps-theyre-surprisingly-useful-and-a-little-unsettling/",
-      "desc": "Apple's AI-powered Siri Recaps won me over in just one day, despite my privacy reservations. But there's still room for improvement.",
-      "score": 5,
-      "source": "techcrunch",
-      "seen": "2026-11-08T09:38:27+00:00"
-    },
-    "applerestrictsdatingappsandaicompanionstousers18andup": {
-      "title": "Apple restricts dating apps and AI companions to users 18 and up",
-      "link": "https://techcrunch.com/2026/11/03/apple-restricts-dating-apps-and-ai-companions-to-users-18-and-up/",
-      "desc": "Apple's new App Store rules will require 18+ ratings for dating apps and AI companions that offer sexual or romantic content.",
-      "score": 5,
-      "source": "techcrunch",
-      "seen": "2026-11-08T09:38:27+00:00"
-    },
-    "readwisetakesonamazonskindleandgoodreadswithitsnewappforbooklovers": {
-      "title": "Readwise takes on Amazon\u2019s Kindle and Goodreads with its new app for book lovers",
-      "link": "https://techcrunch.com/2026/11/02/readwise-takes-on-amazons-kindle-and-goodreads-with-its-new-app-for-book-lovers/",
-      "desc": "Readwise Books combines an e-book store, reading tracker, detailed reading stats, and AI features in a bid to challenge Amazon's ecosystem.",
-      "score": 5,
-      "source": "techcrunch",
-      "seen": "2026-11-08T09:38:27+00:00"
+      "seen": "2026-11-22T10:26:17+00:00"
     },
     "elevenlabsnewappcombinesmeetingnotetakinganddictationforteams": {
       "title": "ElevenLabs\u2019 new app combines meeting note-taking and dictation for teams",
@@ -152,13 +104,37 @@
       "source": "hn-front",
       "seen": "2026-11-15T10:01:14+00:00"
     },
-    "zapfastafastnativewhatsappclientinrustandegui": {
-      "title": "ZapFast: A fast, native WhatsApp client in Rust and egui",
-      "link": "https://github.com/crmne/zapfast",
-      "desc": "Article URL: https://github.com/crmne/zapfast\nComments URL: https://news.ycombinator.com/item?id=50409855\nPoints: 71\n# Comments: 45",
-      "score": 4,
+    "signalrestrictsmobilescreenshotsasitconfrontsexistentialthreatofaisurveillance": {
+      "title": "Signal restricts mobile screenshots as it confronts \u2018existential threat\u2019 of AI surveillance",
+      "link": "https://techcrunch.com/2026/11/21/signal-restricts-mobile-screenshots-as-it-confronts-existential-threat-of-ai-surveillance/",
+      "desc": "Signal is limiting users' ability to take screenshots in both its Android and iOS apps.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-11-22T10:26:17+00:00"
+    },
+    "wanttoseeyourliveaiusageonyourmacsiconsthisclevernewappletsyou": {
+      "title": "Want to see your live AI usage on your Mac\u2019s icons? This clever new app lets you",
+      "link": "https://techcrunch.com/2026/11/19/want-to-see-your-live-ai-usage-on-your-macs-icons-this-clever-new-app-lets-you/",
+      "desc": "IconSwapper brings your Mac's app icons to life with real-time data, animations, and playful customizations that make your desktop more fun.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-11-22T10:26:17+00:00"
+    },
+    "protonslumoaprivacyfocusedalternativetochatgptandclaudearrivesondesktop": {
+      "title": "Proton\u2019s Lumo, a privacy-focused alternative to ChatGPT and Claude, arrives on desktop",
+      "link": "https://techcrunch.com/2026/11/17/protons-lumo-a-privacy-focused-alternative-to-chatgpt-and-claude-arrives-on-desktop/",
+      "desc": "Proton's new Lumo Desktop app for Windows, Mac, and Linux lets users automate tasks across files and connected apps, with granular controls over what its AI can access.",
+      "score": 5,
+      "source": "techcrunch",
+      "seen": "2026-11-22T10:26:17+00:00"
+    },
+    "pandexofficialeuropeanlawforaiagentsovermcp": {
+      "title": "Pandex \u2013 Official European Law for AI Agents, over MCP",
+      "link": "https://www.pandex.io",
+      "desc": "Article URL: https://www.pandex.io\nComments URL: https://news.ycombinator.com/item?id=50593481\nPoints: 94\n# Comments: 21",
+      "score": 5,
       "source": "hn-front",
-      "seen": "2026-11-08T09:38:33+00:00"
+      "seen": "2026-11-22T10:26:19+00:00"
     },
     "gotemail": {
       "title": "GotEmail",
@@ -183,7 +159,15 @@
       "score": 4,
       "source": "techcrunch",
       "seen": "2026-11-15T10:01:09+00:00"
+    },
+    "googlegivesgeminitheabilitytouseyourmacforyou": {
+      "title": "Google gives Gemini the ability to use your Mac for you",
+      "link": "https://techcrunch.com/2026/11/19/google-gives-gemini-the-ability-to-use-your-mac-for-you/",
+      "desc": "Google's latest update to Gemini brings an AI agent to the Mac that can organize files, fill out forms, and tackle multistep workflows.",
+      "score": 4,
+      "source": "techcrunch",
+      "seen": "2026-11-22T10:26:17+00:00"
     }
   },
-  "last_run": "2026-11-15T10:01:14+00:00"
+  "last_run": "2026-11-22T10:26:19+00:00"
 }
